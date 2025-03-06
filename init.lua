@@ -17,6 +17,10 @@ require("applicationSwitcher")
 -- Functions
 -- -----------------------------------------------
 
+function reloadHSConfig()
+    hs.reload()
+end
+
 function menuCapitalize()
     local app = hs.application.frontmostApplication()
     app:selectMenuItem({ "Edit", "Transformations", "Capitalize" })
@@ -74,6 +78,10 @@ end
 
 function openTODO()
     os.execute("open ~/Documents/todo.txt")
+end
+
+function openFaves()
+    os.execute("open ~/Favorites/")
 end
 
 function insertDate()
@@ -274,7 +282,7 @@ function transientKeys:entered()
     transientBanner:appendElements({
         type = "rectangle",
         action = "fill",
-        fillColor = { red = .3, green = 1, blue = .2, alpha = 1 },
+        fillColor = { red = 1, green = 0, blue = 0, alpha = 1 },
         frame = { x = 0, y = 0, w = "100%", h = "100%" }
     })
 
@@ -308,13 +316,16 @@ transientBindings = {
     { {},          's', 'Safari' },
     { {},          'a', 'Music' },
     { {},          't', 'Terminal' },
-    { {},          'f', newFinderWindow },
+    { {},          'f',  openFaves },
     { {},          'n', 'Notes' },
     { {},          'v', 'Visual Studio Code' },
     { {},          'e', 'BBEdit' },
+    { {},          'g', 'ChatGPT' },
     -- Work
     { { 'cmd' },   'x', xLookupHelper },
     { { 'cmd' },   'r', receivedThanks },
+    -- Util
+    { {'alt'},     'r', reloadHSConfig },
 }
 
 for i, mapping in ipairs(transientBindings) do
@@ -375,4 +386,6 @@ end
 appActivationWatcher = hs.application.watcher.new(appActivation)
 appActivationWatcher:start()
 
+
+hs.notify.new({title="Hammerspoon", informativeText="Ready to rock 🤘"}):send()
 -- END HAMMERSPOON CONFIG --
