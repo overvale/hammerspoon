@@ -42,6 +42,29 @@ function openApp(appName)
     end
 end
 
+-- Window Management
+-- -----------------------------------------------
+
+function menuWindowLeft()
+    local app = hs.application.frontmostApplication()
+    app:selectMenuItem({ "Window", "Move & Resize", "Left" })
+end
+
+function menuWindowRight()
+    local app = hs.application.frontmostApplication()
+    app:selectMenuItem({ "Window", "Move & Resize", "Right" })
+end
+
+function menuWindowCenter()
+    local app = hs.application.frontmostApplication()
+    app:selectMenuItem({ "Window", "Center" })
+end
+
+function menuWindowRestore()
+    local app = hs.application.frontmostApplication()
+    app:selectMenuItem({ "Window", "Move & Resize", "Return to Previous Size" })
+end
+
 ---- Backups ----
 
 function backupCloud()
@@ -190,6 +213,11 @@ keyBindings = {
     { { 'alt', 'cmd' },         'm',     toggleMenubar },
     { { 'ctrl', 'alt', 'cmd' }, 'd',     toggleDarkMode },
     { { 'alt', 'shift' },       'space', talk2ChatGPT },
+    -- Window Management
+    { { 'ctrl', 'alt', 'cmd' }, 'left',  menuWindowLeft },
+    { { 'ctrl', 'alt', 'cmd' }, 'right', menuWindowRight },
+    { { 'ctrl', 'alt', 'cmd' }, 'c',     menuWindowCenter },
+    { { 'ctrl', 'alt', 'cmd' }, 'r',     menuWindowRestore },
 }
 
 for i, mapping in ipairs(keyBindings) do
