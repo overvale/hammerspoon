@@ -78,10 +78,6 @@ function openTODO()
     os.execute("open ~/Documents/todo.txt")
 end
 
-function openFaves()
-    os.execute("open ~/Favorites/")
-end
-
 function insertDate()
     local dateStr = os.date("%a, %d %B %Y")
     hs.eventtap.keyStrokes(dateStr)
@@ -233,30 +229,34 @@ function floatingMenu()
     
     -- Create menu items with keyboard shortcuts
     local menuItems = {
+        {title = "Favorites", shortcut = "f", fn = function() os.execute("open ~/Favorites/") end},
+        {title = "-"},
+        {title = "Applications", disabled = true},
+        {title = "ChatGPT",   shortcut = "g", fn = function() hs.application.launchOrFocus("ChatGPT") end},
+
+        {title = "Mail",      shortcut = "m", fn = function() hs.application.launchOrFocus("Mail") end},
+        {title = "Messages",  shortcut = "M", fn = function() hs.application.launchOrFocus("Messages") end},
+        {title = "Calendar",  shortcut = "c", fn = function() hs.application.launchOrFocus("Calendar") end}, 
+        {title = "Notes",     shortcut = "n", fn = function() hs.application.launchOrFocus("Notes") end},
+        {title = "Reminders", shortcut = "r", fn = function() hs.application.launchOrFocus("Reminders") end},
+
+        {title = "Safari",    shortcut = "s", fn = function() hs.application.launchOrFocus("Safari") end},
+        {title = "Music",     shortcut = "a", fn = function() hs.application.launchOrFocus("Music") end},
+        {title = "Terminal",  shortcut = "t", fn = function() hs.application.launchOrFocus("Terminal") end},
+
+        {title = "Cursor",    shortcut = "R", fn = function() hs.application.launchOrFocus("Cursor") end},
+        {title = "BBEdit",    shortcut = "e", fn = function() hs.application.launchOrFocus("BBEdit") end},
+
+        {title = "-"},
         { title = "Backups", menu = {
             { title = "Backup to Cloud", fn = backupCloud },
             { title = "Latest Backup:",  disabled = true },
             { title = lastBackupCloud(), fn = openLastBackup },
         }},
-        {title = "-"},
         {title = "Logbook", menu = {
             {title = "Open Today's Log Entry", fn = logbookNew },
             {title = "Open Logbook",           fn = logbookShow },
         }},
-        {title = "-"},
-        {title = "Applications", disabled = true},
-        {title = "Mail",      shortcut = "m", fn = function() hs.application.launchOrFocus("Mail") end},
-        {title = "Messages",  shortcut = "M", fn = function() hs.application.launchOrFocus("Messages") end},
-        {title = "Calendar",  shortcut = "c", fn = function() hs.application.launchOrFocus("Calendar") end}, 
-        {title = "Safari",    shortcut = "s", fn = function() hs.application.launchOrFocus("Safari") end},
-        {title = "Music",     shortcut = "a", fn = function() hs.application.launchOrFocus("Music") end},
-        {title = "Terminal",  shortcut = "t", fn = function() hs.application.launchOrFocus("Terminal") end},
-        {title = "Favorites", shortcut = "f", fn = function() openFaves() end},
-        {title = "Notes",     shortcut = "n", fn = function() hs.application.launchOrFocus("Notes") end},
-        {title = "Cursor",    shortcut = "r", fn = function() hs.application.launchOrFocus("Cursor") end},
-        {title = "BBEdit",    shortcut = "e", fn = function() hs.application.launchOrFocus("BBEdit") end},
-        {title = "ChatGPT",   shortcut = "g", fn = function() hs.application.launchOrFocus("ChatGPT") end},
-        {title = "-"},
         {title = "Work", menu ={
             {title = "Mail BIDPAK",        fn = bidPackMailer },
             {title = "Vendor Mailer",      fn = vendorMailer },
