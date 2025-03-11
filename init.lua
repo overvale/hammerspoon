@@ -15,10 +15,6 @@ anycomplete.bindHotkeys()
 -- Functions
 -- -----------------------------------------------
 
-function reloadHSConfig()
-    hs.reload()
-end
-
 function menuCapitalize()
     local app = hs.application.frontmostApplication()
     app:selectMenuItem({ "Edit", "Transformations", "Capitalize" })
@@ -34,12 +30,6 @@ function menuLowerCase()
     app:selectMenuItem({ "Edit", "Transformations", "Make Lower Case" })
 end
 
-function newFinderWindow()
-    local finder = hs.appfinder.appFromName("Finder")
-    hs.osascript.applescript('tell application "Finder" to make new Finder window')
-    finder:activate()
-end
-
 function openFolder(path)
     return function()
         os.execute("open " .. path)
@@ -51,6 +41,8 @@ function openApp(appName)
         hs.application.launchOrFocus(appName)
     end
 end
+
+---- Backups ----
 
 function backupCloud()
     hs.osascript.applescript('tell app \"Terminal\" to do script \"backup-cloud\"')
@@ -66,6 +58,8 @@ function openLastBackup()
     os.execute('open "$(echo ~/src/rsync-backup/logs/$(ls ~/src/rsync-backup/logs | tail -1))"')
 end
 
+---- Logbook ----
+
 function logbookNew()
     os.execute("~/src/bin/logg")
 end
@@ -74,14 +68,29 @@ function logbookShow()
     os.execute("open ~/Documents/log/")
 end
 
-function openTODO()
-    os.execute("open ~/Documents/todo.txt")
+-- In Pages there is no button or menu item to TOGGLE the sidebar.
+-- Thus this function is a bit of a hack.
+function pagesSidebarToggle()
+    local app = hs.application.frontmostApplication()
+    if app:name() ~= "Pages" then
+        hs.alert.show("Error: Pages is not the active application!")
+        return
+    end
+
+    local menuBar = app:findMenuItem({"View", "Table of Contents"})
+    if menuBar and menuBar["ticked"] then
+        app:selectMenuItem({"View", "Document Only"})
+    else
+        app:selectMenuItem({"View", "Table of Contents"})
+    end
 end
 
-function insertDate()
-    local dateStr = os.date("%a, %d %B %Y")
-    hs.eventtap.keyStrokes(dateStr)
+-- Why doesn't ChatGTP have a shortcut for voice input?
+function talk2ChatGPT()
+    hs.execute('shortcuts run "Talk to ChatGPT Voice"')
 end
+
+---- Work ----
 
 function receivedThanks()
     local win = hs.window.focusedWindow()
@@ -109,14 +118,6 @@ function xLookupHelper()
     end
 end
 
-function logbook1923New()
-    os.execute("~/src/bin/log1923")
-end
-
-function logbook1923Show()
-    os.execute("open ~/Documents/Work/1923/log/")
-end
-
 function vendorMailer()
     hs.osascript.applescript(
         'tell app \"Terminal\" to do script \"cd ~/src/vendor-mailer/ && python3 vendor_mailer.py\"')
@@ -140,29 +141,6 @@ function bidFinder()
     hs.osascript.applescript('tell app \"Terminal\" to do script \"cd ~/src/bid-finder/ && ./bid-finder"')
     hs.application.launchOrFocus("Terminal")
 end
-
--- In Pages there is no button or menu item to TOGGLE the sidebar.
--- Thus this function is a bit of a hack.
-function pagesSidebarToggle()
-    local app = hs.application.frontmostApplication()
-    if app:name() ~= "Pages" then
-        hs.alert.show("Error: Pages is not the active application!")
-        return
-    end
-
-    local menuBar = app:findMenuItem({"View", "Table of Contents"})
-    if menuBar and menuBar["ticked"] then
-        app:selectMenuItem({"View", "Document Only"})
-    else
-        app:selectMenuItem({"View", "Table of Contents"})
-    end
-end
-
--- Why doesn't ChatGTP have a shortcut for voice input?
-function talk2ChatGPT()
-    hs.execute('shortcuts run "Talk to ChatGPT Voice"')
-end
-
 
 ---- Menu Bar ----
 
@@ -202,14 +180,16 @@ function toggleDarkMode()
     end
 end
 
--- Key Bindings
+
+-- Global Key Bindings
 -- ----------------------------------------------
+-- These bindings are global, and will work in any application.
 
 -- Accepts only function names
 keyBindings = {
-    { { 'alt', 'cmd' },         'm', toggleMenubar },
-    { { 'ctrl', 'alt', 'cmd' }, 'd', toggleDarkMode },
-    { { 'alt', 'shift' },     'space', talk2ChatGPT },
+    { { 'alt', 'cmd' },         'm',     toggleMenubar },
+    { { 'ctrl', 'alt', 'cmd' }, 'd',     toggleDarkMode },
+    { { 'alt', 'shift' },       'space', talk2ChatGPT },
 }
 
 for i, mapping in ipairs(keyBindings) do
@@ -222,6 +202,8 @@ end
 
 -- Floating Menu
 -- ----------------------------------------------
+-- Quick access to frequently used apps and functions directly under
+-- the current mouse position.
 
 function floatingMenu()
     -- Get current mouse position
@@ -229,6 +211,8 @@ function floatingMenu()
     
     -- Create menu items with keyboard shortcuts
     local menuItems = {
+        {title = "Hammerspoon Rocks 🤘"},
+        {title = "-"},
         {title = "Favorites", shortcut = "f", fn = openFolder("~/Favorites/")},
         {title = "-"},
         {title = "Applications", disabled = true},
@@ -265,7 +249,7 @@ function floatingMenu()
             {title = "Received Thanks",    fn = receivedThanks},
         }},
         {title = "-"}, 
-        {title = "Reload Hammerspoon", fn = function() reloadHSConfig() end},
+        {title = "Reload Hammerspoon", fn = function() hs.reload() end},
         {title = "Open Console",       fn = function() hs.openConsole() end},
     }
 
@@ -290,7 +274,6 @@ hs.hotkey.bind({"shift", "cmd"}, "space", floatingMenu)
 -- activates.
 
 -- Create maps you'd like to turn on and off
--- There can be more than one
 readlineModeMap = hs.hotkey.modal.new()
 pagesModeMap = hs.hotkey.modal.new()
 
@@ -308,13 +291,13 @@ pagesModeMap:bind({ 'cmd', 'alt' }, 's', function() pagesSidebarToggle() end)
 -- App Activation Watcher
 function appActivation(appName, eventType, appObject)
     if (eventType == hs.application.watcher.activated) then
-        -- Readline Mode Map
+        -- Readline Mode Map -- active for every app except Terminal and Excel
         if appName == "Terminal" or appName == "Microsoft Excel" then
             readlineModeMap:exit()
         else
             readlineModeMap:enter()
         end
-        -- Pages Mode Map
+        -- Pages Mode Map -- active ONLY for Pages
         if appName == "Pages" then
             pagesModeMap:enter()
         else
@@ -327,5 +310,10 @@ appActivationWatcher = hs.application.watcher.new(appActivation)
 appActivationWatcher:start()
 
 
+-- End of Config
+-- -----------------------------------------------
+-- Nofity user that config has loaded correctly.
+
 hs.notify.new({title="Hammerspoon", informativeText="Ready to rock 🤘"}):send()
+
 -- END HAMMERSPOON CONFIG --
