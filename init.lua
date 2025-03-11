@@ -12,8 +12,6 @@ anycomplete = hs.loadSpoon("Anycomplete")
 anycomplete.engine = "duckduckgo"
 anycomplete.bindHotkeys()
 
-require("applicationSwitcher")
-
 -- Functions
 -- -----------------------------------------------
 
