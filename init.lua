@@ -40,16 +40,16 @@ function newFinderWindow()
     finder:activate()
 end
 
-function openFolder(folderPath)
-    os.execute('open "' .. folderPath .. '"')
+function openFolder(path)
+    return function()
+        os.execute("open " .. path)
+    end
 end
 
 function openApp(appName)
-    os.execute('open -a "' .. appName .. '"')
-end
-
-function runScript(script)
-    os.execute(script)
+    return function()
+        hs.application.launchOrFocus(appName)
+    end
 end
 
 function backupCloud()
@@ -229,23 +229,23 @@ function floatingMenu()
     
     -- Create menu items with keyboard shortcuts
     local menuItems = {
-        {title = "Favorites", shortcut = "f", fn = function() os.execute("open ~/Favorites/") end},
+        {title = "Favorites", shortcut = "f", fn = openFolder("~/Favorites/")},
         {title = "-"},
         {title = "Applications", disabled = true},
-        {title = "ChatGPT",   shortcut = "g", fn = function() hs.application.launchOrFocus("ChatGPT") end},
+        {title = "ChatGPT",   shortcut = "g", fn = openApp("ChatGPT")},
 
-        {title = "Mail",      shortcut = "m", fn = function() hs.application.launchOrFocus("Mail") end},
-        {title = "Messages",  shortcut = "M", fn = function() hs.application.launchOrFocus("Messages") end},
-        {title = "Calendar",  shortcut = "c", fn = function() hs.application.launchOrFocus("Calendar") end}, 
-        {title = "Notes",     shortcut = "n", fn = function() hs.application.launchOrFocus("Notes") end},
-        {title = "Reminders", shortcut = "r", fn = function() hs.application.launchOrFocus("Reminders") end},
+        {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
+        {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
+        {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
+        {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
+        {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
 
-        {title = "Safari",    shortcut = "s", fn = function() hs.application.launchOrFocus("Safari") end},
-        {title = "Music",     shortcut = "a", fn = function() hs.application.launchOrFocus("Music") end},
-        {title = "Terminal",  shortcut = "t", fn = function() hs.application.launchOrFocus("Terminal") end},
+        {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
+        {title = "Music",     shortcut = "a", fn = openApp("Music")},
+        {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
 
-        {title = "Cursor",    shortcut = "R", fn = function() hs.application.launchOrFocus("Cursor") end},
-        {title = "BBEdit",    shortcut = "e", fn = function() hs.application.launchOrFocus("BBEdit") end},
+        {title = "Cursor",    shortcut = "R", fn = openApp("Cursor")},
+        {title = "BBEdit",    shortcut = "e", fn = openApp("BBEdit")},
 
         {title = "-"},
         { title = "Backups", menu = {
