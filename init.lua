@@ -255,6 +255,7 @@ function floatingMenu()
         {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
         {title = "Music",     shortcut = "a", fn = openApp("Music")},
         {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
+        {title = "iPhone",    shortcut = "i", fn = openApp("iPhone Mirroring")},
 
         {title = "Cursor",    shortcut = "R", fn = openApp("Cursor")},
         {title = "BBEdit",    shortcut = "e", fn = openApp("BBEdit")},
