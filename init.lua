@@ -268,26 +268,26 @@ local fMenuItemsAI = {
 function fMenuAI() fMenu(fMenuItemsAI) end
 
 local fMenuItemsMain = {
-    {title = "Hammerspoon Rocks 🤘"},
+    {title = "Hammerspoon Rocks 🤘", disabled = true},
     {title = "-"},
-    {title = "Spotlight…", shortcut = "p", fn = openSpotlight},
-    {title = "Favorites", shortcut = "f", fn = openFolder("~/Favorites/")},
-    {title = "AI Tools…", shortcut = "c", fn = fMenuAI },
+    {title = "Spotlight…", shortcut = "S", fn = openSpotlight},
+    {title = "Favorites",  shortcut = "F", fn = openFolder("~/Favorites/")},
+    {title = "AI Tools…",  shortcut = "i", fn = fMenuAI },
     {title = "-"},
     {title = "Applications", disabled = true},
     {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
     {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
     {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
     {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
-    {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
+    {title = "Reminders", shortcut = "R", fn = openApp("Reminders")},
 
     {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
     {title = "Music",     shortcut = "a", fn = openApp("Music")},
     {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
-    {title = "iPhone",    shortcut = "i", fn = openApp("iPhone Mirroring")},
+    {title = "iPhone",    shortcut = "I", fn = openApp("iPhone Mirroring")},
 
-    {title = "Cursor",    shortcut = "R", fn = openApp("Cursor")},
-    {title = "BBEdit",    shortcut = "e", fn = openApp("BBEdit")},
+    {title = "Cursor",    shortcut = "r", fn = openApp("Cursor")},
+    {title = "BBEdit",    shortcut = "b", fn = openApp("BBEdit")},
 
     {title = "-"},
     { title = "Backups", menu = {
