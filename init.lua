@@ -42,6 +42,10 @@ function openApp(appName)
     end
 end
 
+function openSpotlight()
+    keyUpDown({"cmd"}, "space")
+end
+
 -- Window Management
 -- -----------------------------------------------
 
@@ -232,68 +236,77 @@ end
 -- ----------------------------------------------
 -- Quick access to frequently used apps and functions directly under
 -- the current mouse position.
+-- Remember that sub-menus must be declared before the main menu.
 
-function floatingMenu()
-    -- Get current mouse position
+-- Generalized floating menu function
+function fMenu(menuItems)
     local mousePos = hs.mouse.absolutePosition()
-    
-    -- Create menu items with keyboard shortcuts
-    local menuItems = {
-        {title = "Hammerspoon Rocks 🤘"},
-        {title = "-"},
-        {title = "Favorites", shortcut = "f", fn = openFolder("~/Favorites/")},
-        {title = "-"},
-        {title = "Applications", disabled = true},
-        {title = "ChatGPT",   shortcut = "g", fn = openApp("ChatGPT")},
-
-        {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
-        {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
-        {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
-        {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
-        {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
-
-        {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
-        {title = "Music",     shortcut = "a", fn = openApp("Music")},
-        {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
-        {title = "iPhone",    shortcut = "i", fn = openApp("iPhone Mirroring")},
-
-        {title = "Cursor",    shortcut = "R", fn = openApp("Cursor")},
-        {title = "BBEdit",    shortcut = "e", fn = openApp("BBEdit")},
-
-        {title = "-"},
-        { title = "Backups", menu = {
-            { title = "Backup to Cloud", fn = backupCloud },
-            { title = "Latest Backup:",  disabled = true },
-            { title = lastBackupCloud(), fn = openLastBackup },
-        }},
-        {title = "Logbook", menu = {
-            {title = "Open Today's Log Entry", fn = logbookNew },
-            {title = "Open Logbook",           fn = logbookShow },
-        }},
-        {title = "Work", menu ={
-            {title = "Mail BIDPAK",        fn = bidPackMailer },
-            {title = "Vendor Mailer",      fn = vendorMailer },
-            {title = "Bid Pack Generator", fn = bidPackGen },
-            {title = "XLookup",            fn = xLookupHelper},
-            {title = "Received Thanks",    fn = receivedThanks},
-        }},
-        {title = "-"}, 
-        {title = "Reload Hammerspoon", fn = function() hs.reload() end},
-        {title = "Open Console",       fn = function() hs.openConsole() end},
-    }
-
-    -- Create a temporary menubar item (invisible)
-    local floatMenu = hs.menubar.new(false)
-    
-    -- Show popup menu at mouse position
-    floatMenu:setMenu(menuItems)
-    floatMenu:popupMenu(mousePos)
-    
-    -- Delete the menubar item when done
-    floatMenu:delete()
+    local menu = hs.menubar.new(false)
+    menu:setMenu(menuItems)
+    menu:popupMenu(mousePos)
+    -- delete when done
+    menu:delete()
 end
 
-hs.hotkey.bind({"shift", "cmd"}, "space", floatingMenu)
+-- Work menu items
+local fMenuItemsWork = {
+    {title = "Mail BIDPAK",        fn = bidPackMailer },
+    {title = "Vendor Mailer",      fn = vendorMailer },
+    {title = "Bid Pack Generator", fn = bidPackGen },
+    {title = "XLookup",            fn = xLookupHelper},
+    {title = "Received Thanks",    fn = receivedThanks}
+}
+function fMenuWork() fMenu(fMenuItemsWork) end
+
+local fMenuItemsAI = {
+    {title = "ChatGPT",    shortcut = "c", fn = openApp("ChatGPT")},
+    {title = "Perplexity", shortcut = "p", fn = function() hs.urlevent.openURL("https://www.perplexity.ai") end},
+    {title = "Gemini",     shortcut = "g", fn = function() hs.urlevent.openURL("https://gemini.google.com") end},
+    {title = "Grok",       shortcut = "r", fn = function() hs.urlevent.openURL("https://grok.com") end},
+    {title = "Claude",     shortcut = "l", fn = function() hs.urlevent.openURL("https://claude.ai") end}
+}
+function fMenuAI() fMenu(fMenuItemsAI) end
+
+local fMenuItemsMain = {
+    {title = "Hammerspoon Rocks 🤘"},
+    {title = "-"},
+    {title = "Spotlight…", shortcut = "p", fn = openSpotlight},
+    {title = "Favorites", shortcut = "f", fn = openFolder("~/Favorites/")},
+    {title = "AI Tools…", shortcut = "c", fn = fMenuAI },
+    {title = "-"},
+    {title = "Applications", disabled = true},
+    {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
+    {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
+    {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
+    {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
+    {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
+
+    {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
+    {title = "Music",     shortcut = "a", fn = openApp("Music")},
+    {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
+    {title = "iPhone",    shortcut = "i", fn = openApp("iPhone Mirroring")},
+
+    {title = "Cursor",    shortcut = "R", fn = openApp("Cursor")},
+    {title = "BBEdit",    shortcut = "e", fn = openApp("BBEdit")},
+
+    {title = "-"},
+    { title = "Backups", menu = {
+        { title = "Backup to Cloud", fn = backupCloud },
+        { title = "Latest Backup:",  disabled = true },
+        { title = lastBackupCloud(), fn = openLastBackup },
+    }},
+    {title = "Logbook", menu = {
+        {title = "Open Today's Log Entry", fn = logbookNew },
+        {title = "Open Logbook",           fn = logbookShow },
+    }},
+    {title = "Work...",   shortcut = "w", fn = fMenuWork },
+    {title = "-"}, 
+    {title = "Reload Hammerspoon", fn = function() hs.reload() end},
+    {title = "Open Console",       fn = function() hs.openConsole() end},
+}
+function fMenuMain() fMenu(fMenuItemsMain) end
+
+hs.hotkey.bind({"shift", "cmd"}, "space", fMenuMain)
 
 
 -- App-Specific Keymaps
