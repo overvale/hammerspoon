@@ -288,6 +288,7 @@ local fMenuItemsMain = {
 
     {title = "Cursor",    shortcut = "r", fn = openApp("Cursor")},
     {title = "BBEdit",    shortcut = "b", fn = openApp("BBEdit")},
+    {title = "Excel",     shortcut = "x", fn = openApp("Microsoft Excel")},
 
     {title = "-"},
     { title = "Backups", menu = {
