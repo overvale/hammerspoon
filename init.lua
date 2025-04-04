@@ -40,9 +40,9 @@ function openApp(...)
     local apps = { ... }
     return function()
         for _, appName in ipairs(apps) do
-        hs.application.launchOrFocus(appName)
+            hs.application.launchOrFocus(appName)
+        end
     end
-end
 end
 
 function openSpotlight()
@@ -267,31 +267,37 @@ local fMenuItemsAI = {
     {title = "Gemini",     shortcut = "g", fn = function() hs.urlevent.openURL("https://gemini.google.com") end},
     {title = "Grok",       shortcut = "r", fn = function() hs.urlevent.openURL("https://grok.com") end},
     {title = "Claude",     shortcut = "l", fn = function() hs.urlevent.openURL("https://claude.ai") end}
-}
+} 
 function fMenuAI() fMenu(fMenuItemsAI) end
 
 local fMenuItemsMain = {
     {title = "Hammerspoon Rocks 🤘", disabled = true},
     {title = "-"},
+
     {title = "Spotlight…", shortcut = "S", fn = openSpotlight},
     {title = "Favorites",  shortcut = "F", fn = openFolder("~/Favorites/")},
     {title = "AI Tools…",  shortcut = "i", fn = fMenuAI },
+    {title = "Tweets",     shortcut = "T", fn = openFolder("~/Documents/tweets.txt")},
+
     {title = "-"},
     {title = "Applications", disabled = true},
+
+    {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
     {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
     {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
-    {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
-    {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
-    {title = "Reminders", shortcut = "R", fn = openApp("Reminders")},
-
-    {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
     {title = "Music",     shortcut = "a", fn = openApp("Music")},
-    {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
-    {title = "iPhone",    shortcut = "I", fn = openApp("iPhone Mirroring")},
-
-    {title = "Cursor",    shortcut = "r", fn = openApp("Cursor")},
+    {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
+    {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
+    {title = "    Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Music", "Notes", "Safari")},
+    
+    {title = "-"},
+    
     {title = "BBEdit",    shortcut = "b", fn = openApp("BBEdit")},
     {title = "Excel",     shortcut = "x", fn = openApp("Microsoft Excel")},
+    {title = "iPhone",    shortcut = "I", fn = openApp("iPhone Mirroring")},
+    {title = "Reminders", shortcut = "R", fn = openApp("Reminders")},
+    {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
+    {title = "VSCode",    shortcut = "v", fn = openApp("Visual Studio Code")},
 
     {title = "-"},
     { title = "Backups", menu = {
