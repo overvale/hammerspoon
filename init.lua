@@ -36,10 +36,13 @@ function openFolder(path)
     end
 end
 
-function openApp(appName)
+function openApp(...)
+    local apps = { ... }
     return function()
+        for _, appName in ipairs(apps) do
         hs.application.launchOrFocus(appName)
     end
+end
 end
 
 function openSpotlight()
