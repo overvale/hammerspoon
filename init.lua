@@ -345,7 +345,7 @@ readlineModeMap:bind({ 'alt' }, 'd', function() keyUpDown({ 'alt' }, 'forwarddel
 pagesModeMap:bind({ 'cmd', 'alt' }, 's', function() pagesSidebarToggle() end)
 
 -- App Activation Watcher
-function appActivation(appName, eventType, appObject)
+function appModeMaps(appName, eventType, appObject)
     if (eventType == hs.application.watcher.activated) then
         -- Readline Mode Map -- active for every app except Terminal and Excel
         if appName == "Terminal" or appName == "Microsoft Excel" then
@@ -362,8 +362,8 @@ function appActivation(appName, eventType, appObject)
     end
 end
 
-appActivationWatcher = hs.application.watcher.new(appActivation)
-appActivationWatcher:start()
+appModeMapWatcher = hs.application.watcher.new(appModeMaps)
+appModeMapWatcher:start()
 
 
 -- End of Config
