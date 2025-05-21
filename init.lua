@@ -270,6 +270,19 @@ function exitWritingMode()
     end
 end
 
+hs.urlevent.bind("writing-mode-start", function(eventName, params)
+    startWritingMode()
+end)
+
+hs.urlevent.bind("writing-mode-exit", function(eventName, params)
+    exitWritingMode()
+end)
+
+-- I have a shortcut to toggle a writing focus, and it includes
+-- callbacks to the above functions.
+function toggleWritingMode()
+    hs.execute('shortcuts run "Toggle Writing Focus"')
+end
 
 -- Global Key Bindings
 -- ----------------------------------------------
@@ -367,7 +380,7 @@ local fMenuItemsMain = {
         {title = "Open Today's Log Entry", fn = logbookNew },
         {title = "Open Logbook",           fn = logbookShow },
     }},
-    {title = "Enter Writing Mode",   shortcut = "w", fn = startWritingMode },
+    {title = "Enter Writing Mode",   shortcut = "w", fn = toggleWritingMode },
 }
 function fMenuMain() fMenu(fMenuItemsMain) end
 
