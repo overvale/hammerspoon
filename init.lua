@@ -32,7 +32,11 @@ end
 
 function openFolder(path)
     return function()
-        os.execute("open " .. path)
+        -- Expand ~ to home directory if present
+        if string.sub(path, 1, 2) == "~/" then
+            path = os.getenv("HOME") .. string.sub(path, 2)
+        end
+        os.execute('open "' .. path .. '"')
     end
 end
 
@@ -271,13 +275,10 @@ local fMenuItemsAI = {
 function fMenuAI() fMenu(fMenuItemsAI) end
 
 local fMenuItemsMain = {
-    {title = "Hammerspoon Rocks 🤘", disabled = true},
-    {title = "-"},
-
-    {title = "Spotlight…", shortcut = "S", fn = openSpotlight},
-    {title = "Favorites",  shortcut = "F", fn = openFolder("~/Favorites/")},
-    {title = "AI Tools…",  shortcut = "i", fn = fMenuAI },
-    {title = "Tweets",     shortcut = "T", fn = openFolder("~/Documents/tweets.txt")},
+    {title = "Favorites",    shortcut = "F", fn = openFolder("~/Favorites/")},
+    {title = "The Material", shortcut = "!", fn = openFolder("~/Documents/The Material/")},
+    {title = "AI Tools…",    shortcut = "i", fn = fMenuAI },
+    {title = "Tweets",       shortcut = "T", fn = openFolder("~/Documents/tweets.txt")},
 
     {title = "-"},
     {title = "Applications", disabled = true},
