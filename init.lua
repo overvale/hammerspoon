@@ -124,6 +124,11 @@ function talk2ChatGPT()
     hs.execute('shortcuts run "Talk to ChatGPT Voice"')
 end
 
+-- Why doens't reminders have a shortcut for a new reminder?
+function newReminder()
+    hs.execute('shortcuts run "Create New Reminder"')
+end
+
 ---- Work ----
 
 function receivedThanks()
@@ -224,6 +229,8 @@ keyBindings = {
     { { 'alt', 'cmd' },         'm',     toggleMenubar },
     { { 'ctrl', 'alt', 'cmd' }, 'd',     toggleDarkMode },
     { { 'alt', 'shift' },       'space', talk2ChatGPT },
+    { { 'ctrl', 'alt', },       'space', newReminder },
+
     -- Window Management
     { { 'ctrl', 'alt', 'cmd' }, 'left',  menuWindowLeft },
     { { 'ctrl', 'alt', 'cmd' }, 'right', menuWindowRight },
