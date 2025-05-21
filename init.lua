@@ -273,13 +273,15 @@ local fMenuItemsWork = {
 function fMenuWork() fMenu(fMenuItemsWork) end
 
 local fMenuItemsAI = {
-    {title = "ChatGPT",    shortcut = "c", fn = openApp("ChatGPT")},
+    {title = "ChatGPT",    shortcut = "c", fn = function() hs.urlevent.openURL("https://chatgpt.com") end},
     {title = "Perplexity", shortcut = "p", fn = function() hs.urlevent.openURL("https://www.perplexity.ai") end},
     {title = "Gemini",     shortcut = "g", fn = function() hs.urlevent.openURL("https://gemini.google.com") end},
     {title = "Grok",       shortcut = "r", fn = function() hs.urlevent.openURL("https://grok.com") end},
     {title = "Claude",     shortcut = "l", fn = function() hs.urlevent.openURL("https://claude.ai") end}
 } 
 function fMenuAI() fMenu(fMenuItemsAI) end
+
+hs.hotkey.bind({"cmd", "ctrl", "option"}, "i", fMenuAI)
 
 local fMenuItemsMain = {
     {title = "Favorites",    shortcut = "F", fn = openFolder("~/Favorites/")},
@@ -288,22 +290,19 @@ local fMenuItemsMain = {
     {title = "Tweets",       shortcut = "T", fn = openFolder("~/Documents/tweets.txt")},
 
     {title = "-"},
-    {title = "Applications", disabled = true},
-
     {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
     {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
     {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
-    {title = "Music",     shortcut = "a", fn = openApp("Music")},
-    {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
-    {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
-    {title = "    Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Music", "Notes", "Safari")},
+    {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
+    {title = "    Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Reminders")},
     
     {title = "-"},
     
+    {title = "Music",     shortcut = "a", fn = openApp("Music")},
+    {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
+    {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
     {title = "BBEdit",    shortcut = "b", fn = openApp("BBEdit")},
     {title = "Excel",     shortcut = "x", fn = openApp("Microsoft Excel")},
-    {title = "iPhone",    shortcut = "I", fn = openApp("iPhone Mirroring")},
-    {title = "Reminders", shortcut = "R", fn = openApp("Reminders")},
     {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
     {title = "VSCode",    shortcut = "v", fn = openApp("Visual Studio Code")},
 
@@ -318,9 +317,6 @@ local fMenuItemsMain = {
         {title = "Open Logbook",           fn = logbookShow },
     }},
     {title = "Work...",   shortcut = "w", fn = fMenuWork },
-    {title = "-"}, 
-    {title = "Reload Hammerspoon", fn = function() hs.reload() end},
-    {title = "Open Console",       fn = function() hs.openConsole() end},
 }
 function fMenuMain() fMenu(fMenuItemsMain) end
 
