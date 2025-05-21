@@ -220,6 +220,57 @@ function toggleDarkMode()
 end
 
 
+-- Writing Assassin
+-- ----------------------------------------------
+
+-- Code for starting and stopping "WRITING MODE".
+-- When this mode is active the apps in the below list are
+-- automatically killed if they launch.
+
+local assassinTargets = {
+    "Mail",
+    "Safari", "Chrome", "Firefox",
+    "TV",
+    "Messages",
+    "News",
+    "Reminders",
+    "Calendar",
+}
+
+function writingAssassin(appName, eventType, appObject)
+    if (eventType == hs.application.watcher.launching or
+        eventType == hs.application.watcher.activated) then
+      for _, target in ipairs(assassinTargets) do
+        if appName == target then
+        --   hs.notify.new({ title="Writing Assassin", informativeText=appName.." killed!" }):send()
+          appObject:kill()
+        end
+      end
+    end
+  end
+
+-- Create a watcher for the writing assassin
+local writingAssassinWatcher = hs.application.watcher.new(writingAssassin)
+
+-- Create a menu bar item for writing mode
+local writingMenu
+
+function startWritingMode()
+    writingAssassinWatcher:start()
+    writingMenu = hs.menubar.new()
+    writingMenu:setTitle("Writing...")
+    writingMenu:setMenu({ { title = "Exit Writing Mode", fn = exitWritingMode } })
+end
+
+function exitWritingMode()
+    writingAssassinWatcher:stop()
+    if writingMenu then
+      writingMenu:removeFromMenuBar()
+      writingMenu = nil
+    end
+end
+
+
 -- Global Key Bindings
 -- ----------------------------------------------
 -- These bindings are global, and will work in any application.
@@ -316,7 +367,7 @@ local fMenuItemsMain = {
         {title = "Open Today's Log Entry", fn = logbookNew },
         {title = "Open Logbook",           fn = logbookShow },
     }},
-    {title = "Work...",   shortcut = "w", fn = fMenuWork },
+    {title = "Enter Writing Mode",   shortcut = "w", fn = startWritingMode },
 }
 function fMenuMain() fMenu(fMenuItemsMain) end
 
