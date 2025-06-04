@@ -326,6 +326,39 @@ function fMenu(menuItems)
     menu:delete()
 end
 
+-- Recursively generate menu items for a folder
+function folderMenuItems(path)
+    local items = {}
+    local expandedPath = path
+    if string.sub(path, 1, 2) == "~/" then
+        expandedPath = os.getenv("HOME") .. string.sub(path, 2)
+    end
+    local handle = io.popen('ls -A1 "' .. expandedPath .. '"')
+    if not handle then return items end
+    for entry in handle:lines() do
+        -- Skip hidden files (those starting with a dot)
+        if string.sub(entry, 1, 1) ~= "." then
+            local fullPath = expandedPath .. "/" .. entry
+            local attr = hs.fs.attributes(fullPath)
+            if attr then
+                if attr.mode == "directory" then
+                    table.insert(items, {
+                        title = entry,
+                        menu = folderMenuItems(fullPath)
+                    })
+                else
+                    table.insert(items, {
+                        title = entry,
+                        fn = function() os.execute('open "' .. fullPath .. '"') end
+                    })
+                end
+            end
+        end
+    end
+    handle:close()
+    return items
+end
+
 -- Work menu items
 local fMenuItemsWork = {
     {title = "Mail BIDPAK",        fn = bidPackMailer },
@@ -348,8 +381,7 @@ function fMenuAI() fMenu(fMenuItemsAI) end
 hs.hotkey.bind({"cmd", "ctrl", "option"}, "i", fMenuAI)
 
 local fMenuItemsMain = {
-    {title = "Favorites",    shortcut = "F", fn = openFolder("~/Favorites/")},
-    {title = "The Material", shortcut = "!", fn = openFolder("~/Documents/The Material/")},
+    {title = "The Material", menu = folderMenuItems("~/Documents/The Material/") },
     {title = "AI Tools…",    shortcut = "i", fn = fMenuAI },
     {title = "Tweets",       shortcut = "T", fn = openFolder("~/Documents/tweets.txt")},
 
