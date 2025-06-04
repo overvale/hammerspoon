@@ -256,6 +256,7 @@ local assassinTargets = {
     "News",
     "Reminders",
     "Calendar",
+    "Visual Studio Code",
 }
 
 function writingAssassin(appName, eventType, appObject)
