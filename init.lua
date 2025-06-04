@@ -183,11 +183,32 @@ end
 
 ---- Menu Bar ----
 
-function toggleMenubar()
-    hs.applescript([[
-  tell application "System Events"
-    tell dock preferences to set autohide menu bar to not autohide menu bar
-  end tell]])
+-- AppleScript template for setting (or toggling) the menu bar autohide
+local menubarCMD = [[
+tell application "System Events" to tell dock preferences
+  set autohide menu bar to %s
+end tell
+]]
+
+--- hide, show or toggle the menu bar autohide setting
+-- @param mode string: "hide", "show", or "toggle" (default: toggle)
+function toggleMenubar(mode)
+    -- default to "toggle" when mode is nil or empty
+    local m = (mode and mode:lower() ~= "" and mode:lower()) or "toggle"
+
+    local lookup = {
+      hide   = "true",
+      show   = "false",
+      toggle = "not autohide menu bar"
+    }
+
+    local cmd = lookup[m]
+    if not cmd then
+      hs.alert.show("toggleMenubar: bad mode “" .. tostring(mode) .. "”")
+      return
+    end
+
+    hs.applescript(menubarCMD:format(cmd))
 end
 
 ---- Dark Mode ----
@@ -260,6 +281,7 @@ function startWritingMode()
     writingMenu = hs.menubar.new()
     writingMenu:setTitle("Writing...")
     writingMenu:setMenu({ { title = "Exit Writing Mode", fn = exitWritingMode } })
+    toggleMenubar(hide)
 end
 
 function exitWritingMode()
@@ -268,6 +290,7 @@ function exitWritingMode()
       writingMenu:removeFromMenuBar()
       writingMenu = nil
     end
+    toggleMenubar(show)
 end
 
 hs.urlevent.bind("writing-mode-start", function(eventName, params)
