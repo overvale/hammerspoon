@@ -297,8 +297,6 @@ end
 keyBindings = {
     { { 'alt', 'cmd' },         'm',     toggleMenubar },
     { { 'ctrl', 'alt', 'cmd' }, 'd',     toggleDarkMode },
-    { { 'alt', 'shift' },       'space', talk2ChatGPT },
-    { { 'ctrl', 'alt', },       'space', newReminder },
 
     -- Window Management
     { { 'ctrl', 'alt', 'cmd' }, 'left',  menuWindowLeft },
@@ -374,38 +372,24 @@ local fMenuItemsWork = {
 }
 function fMenuWork() fMenu(fMenuItemsWork) end
 
-local fMenuItemsAI = {
-    {title = "ChatGPT",    shortcut = "c", fn = function() hs.urlevent.openURL("https://chatgpt.com") end},
-    {title = "Perplexity", shortcut = "p", fn = function() hs.urlevent.openURL("https://www.perplexity.ai") end},
-    {title = "Gemini",     shortcut = "g", fn = function() hs.urlevent.openURL("https://gemini.google.com") end},
-    {title = "Grok",       shortcut = "r", fn = function() hs.urlevent.openURL("https://grok.com") end},
-    {title = "Claude",     shortcut = "l", fn = function() hs.urlevent.openURL("https://claude.ai") end}
-} 
-function fMenuAI() fMenu(fMenuItemsAI) end
-
-hs.hotkey.bind({"cmd", "ctrl", "option"}, "i", fMenuAI)
-
 local fMenuItemsMain = {
-    {title = "The Material", menu = folderMenuItems("~/Documents/The Material/") },
-    {title = "AI Tools…",    shortcut = "i", fn = fMenuAI },
-    {title = "Tweets",       shortcut = "T", fn = openFolder("~/Documents/tweets.txt")},
+    {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
+    {title = "Claude",      shortcut = "d", fn = openApp("Claude") },
 
     {title = "-"},
     {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
     {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
     {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
     {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
-    {title = "    Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Reminders")},
+    {title = "↑ Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Reminders")},
     
     {title = "-"},
     
     {title = "Music",     shortcut = "a", fn = openApp("Music")},
     {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
     {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
-    {title = "BBEdit",    shortcut = "b", fn = openApp("BBEdit")},
-    {title = "Excel",     shortcut = "x", fn = openApp("Microsoft Excel")},
+    {title = "Emacs",     shortcut = "e", fn = openApp("Emacs")},
     {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
-    {title = "VSCode",    shortcut = "v", fn = openApp("Visual Studio Code")},
 
     {title = "-"},
     {title = "Backup to Cloud", fn = backupCloud },
