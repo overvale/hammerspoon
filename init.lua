@@ -83,25 +83,6 @@ function backupCloud()
     hs.application.launchOrFocus("Terminal")
 end
 
-function lastBackupCloud()
-    local output, _, _ = hs.execute("/Users/oliver/src/rsync-backup/last-backup-cloud.sh")
-    return output
-end
-
-function openLastBackup()
-    os.execute('open "$(echo ~/src/rsync-backup/logs/$(ls ~/src/rsync-backup/logs | tail -1))"')
-end
-
----- Logbook ----
-
-function logbookNew()
-    os.execute("~/src/bin/logg")
-end
-
-function logbookShow()
-    os.execute("open ~/Documents/log/")
-end
-
 -- In Pages there is no button or menu item to TOGGLE the sidebar.
 -- Thus this function is a bit of a hack.
 function pagesSidebarToggle()
@@ -427,16 +408,8 @@ local fMenuItemsMain = {
     {title = "VSCode",    shortcut = "v", fn = openApp("Visual Studio Code")},
 
     {title = "-"},
-    { title = "Backups", menu = {
-        { title = "Backup to Cloud", fn = backupCloud },
-        { title = "Latest Backup:",  disabled = true },
-        { title = lastBackupCloud(), fn = openLastBackup },
-    }},
-    {title = "Logbook", menu = {
-        {title = "Open Today's Log Entry", fn = logbookNew },
-        {title = "Open Logbook",           fn = logbookShow },
-    }},
-    {title = "Enter Writing Mode",   shortcut = "w", fn = toggleWritingMode },
+    {title = "Backup to Cloud", fn = backupCloud },
+    {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
 }
 function fMenuMain() fMenu(fMenuItemsMain) end
 
