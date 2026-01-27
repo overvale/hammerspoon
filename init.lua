@@ -421,11 +421,18 @@ readlineModeMap:bind({ 'alt' }, 'd', function() keyUpDown({ 'alt' }, 'forwarddel
 -- Pages
 pagesModeMap:bind({ 'cmd', 'alt' }, 's', function() pagesSidebarToggle() end)
 
+-- Apps where readline mode should NOT be active
+local readlineExcludedApps = {
+    ["Terminal"] = true,
+    ["Microsoft Excel"] = true,
+    ["Emacs"] = true,
+}
+
 -- App Activation Watcher
 function appModeMaps(appName, eventType, appObject)
     if (eventType == hs.application.watcher.activated) then
-        -- Readline Mode Map -- active for every app except Terminal and Excel
-        if appName == "Terminal" or appName == "Microsoft Excel" then
+        -- Readline Mode Map -- active for every app except those in readlineExcludedApps
+        if readlineExcludedApps[appName] then
             readlineModeMap:exit()
         else
             readlineModeMap:enter()
