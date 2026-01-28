@@ -228,6 +228,35 @@ function toggleWritingMode()
     hs.execute('shortcuts run "Toggle Writing Focus"')
 end
 
+
+-- App Block List
+-- ----------------------------------------------
+-- Apps in this list are automatically killed on launch.
+-- This runs all the time, unlike Writing Assassin which is toggled.
+
+local blockedApps = {
+    "News",
+}
+
+local function appBlocker(appName, eventType, appObject)
+    if eventType == hs.application.watcher.launching then
+        for _, blocked in ipairs(blockedApps) do
+            if appName == blocked then
+                appObject:kill()
+                hs.notify.new({
+                    title = "App Blocked",
+                    informativeText = appName .. " was blocked from launching"
+                }):send()
+                return
+            end
+        end
+    end
+end
+
+local appBlockerWatcher = hs.application.watcher.new(appBlocker)
+appBlockerWatcher:start()
+
+
 -- Global Key Bindings
 -- ----------------------------------------------
 -- These bindings are global, and will work in any application.
