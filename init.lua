@@ -267,6 +267,36 @@ function fMenu(menuItems)
     menu:delete()
 end
 
+-- Generate menu items for currently running apps
+function runningAppsMenuItems()
+    local items = {}
+    local apps = hs.application.runningApplications()
+
+    -- Filter to regular apps (not background/system apps) and sort by name
+    local regularApps = {}
+    for _, app in ipairs(apps) do
+        if app:kind() == 1 then  -- 1 = regular app (has dock icon)
+            table.insert(regularApps, app)
+        end
+    end
+    table.sort(regularApps, function(a, b)
+        return a:name():lower() < b:name():lower()
+    end)
+
+    for _, app in ipairs(regularApps) do
+        local appName = app:name()
+        local bundleID = app:bundleID()
+
+        table.insert(items, {
+            title = appName,
+            image = bundleID and hs.image.imageFromAppBundle(bundleID),
+            fn = function() app:activate() end,
+        })
+    end
+
+    return items
+end
+
 -- Recursively generate menu items for a folder
 function folderMenuItems(path)
     local items = {}
@@ -310,30 +340,33 @@ local fMenuItemsWork = {
 }
 function fMenuWork() fMenu(fMenuItemsWork) end
 
-local fMenuItemsMain = {
-    {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
-    {title = "Claude",      shortcut = "d", fn = openApp("Claude") },
+function fMenuMain()
+    local menuItems = {
+        {title = "Running Apps", menu = runningAppsMenuItems() },
+        {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
+        {title = "Claude",      shortcut = "d", fn = openApp("Claude") },
 
-    {title = "-"},
-    {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")}, 
-    {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
-    {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
-    {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
-    {title = "↑ Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Reminders")},
-    
-    {title = "-"},
-    
-    {title = "Music",     shortcut = "a", fn = openApp("Music")},
-    {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
-    {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
-    {title = "Emacs",     shortcut = "e", fn = openApp("Emacs")},
-    {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
+        {title = "-"},
+        {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")},
+        {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
+        {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
+        {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
+        {title = "↑ Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Reminders")},
 
-    {title = "-"},
-    {title = "Backup to Cloud", fn = backupCloud },
-    {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
-}
-function fMenuMain() fMenu(fMenuItemsMain) end
+        {title = "-"},
+
+        {title = "Music",     shortcut = "a", fn = openApp("Music")},
+        {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
+        {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
+        {title = "Emacs",     shortcut = "e", fn = openApp("Emacs")},
+        {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
+
+        {title = "-"},
+        {title = "Backup to Cloud", fn = backupCloud },
+        {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
+    }
+    fMenu(menuItems)
+end
 
 hs.hotkey.bind({"shift", "cmd"}, "space", fMenuMain)
 
