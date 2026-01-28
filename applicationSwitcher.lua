@@ -31,6 +31,13 @@ local function makeMenu()
     local currentApp = hs.application.frontmostApplication()
     local runningApps = hs.application.runningApplications()
 
+    -- Add tear-off option at the top
+    table.insert(menuItems, {
+        title = "Tear Off Menu",
+        fn = function() require("appPalette").show() end
+    })
+    table.insert(menuItems, { title = "-" })
+
     -- Determine counts for visible and hidden apps
     local visibleCount = 0
     local hasHidden = false
