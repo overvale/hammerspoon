@@ -1,5 +1,6 @@
 -- Oliver Taylor's Hammerspoon Config
 
+require("applicationSwitcher")
 
 -- Setup
 -- -----------------------------------------------
