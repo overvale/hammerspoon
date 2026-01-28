@@ -2,6 +2,7 @@
 
 require("appPalette")
 require("applicationSwitcher")
+require("popupTabs")
 
 -- Setup
 -- -----------------------------------------------
