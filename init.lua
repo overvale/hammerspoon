@@ -362,16 +362,6 @@ function folderMenuItems(path)
     return items
 end
 
--- Work menu items
-local fMenuItemsWork = {
-    {title = "Mail BIDPAK",        fn = bidPackMailer },
-    {title = "Vendor Mailer",      fn = vendorMailer },
-    {title = "Bid Pack Generator", fn = bidPackGen },
-    {title = "XLookup",            fn = xLookupHelper},
-    {title = "Received Thanks",    fn = receivedThanks}
-}
-function fMenuWork() fMenu(fMenuItemsWork) end
-
 function fMenuMain()
     local menuItems = {
         {title = "Running Apps", menu = runningAppsMenuItems() },
@@ -452,11 +442,7 @@ end
 appModeMapWatcher = hs.application.watcher.new(appModeMaps)
 appModeMapWatcher:start()
 
-
--- End of Config
--- -----------------------------------------------
 -- Nofity user that config has loaded correctly.
-
 hs.notify.new({title="Hammerspoon", informativeText="Ready to rock 🤘"}):send()
 
 -- END HAMMERSPOON CONFIG --
