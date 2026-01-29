@@ -1,6 +1,8 @@
 -- Application Switcher (macOS 9 style)
 -- "Vibe Coded" by Oliver Taylor
 
+local utils = require("utils")
+
 -- Configurable settings
 local hotkeyMods = { "cmd", "option" }
 local hotkeyKey = "."
@@ -10,19 +12,9 @@ local iconSizeSwitcher = { w = 20, h = 20 }
 -- Create a menubar item
 local switcher = hs.menubar.new()
 
--- Helper: Retrieve and sort running apps by title
+-- Helper: Retrieve and sort running apps by title (uses shared utility)
 local function getSortedRunningApps()
-    local runningApps = hs.application.runningApplications()
-    local appList = {}
-    for _, app in ipairs(runningApps) do
-        if app:kind() == 1 and app:title() and app:title() ~= "" then
-            table.insert(appList, app)
-        end
-    end
-    table.sort(appList, function(a, b)
-        return a:title() < b:title()
-    end)
-    return appList
+    return utils.getRunningApps()
 end
 
 -- Generate menu items
@@ -106,9 +98,9 @@ local function makeMenu()
         }
 
         if app:bundleID() then
-            local icon = hs.image.imageFromAppBundle(app:bundleID())
+            local icon = utils.getCachedIcon(app:bundleID(), iconSizeMenu)
             if icon then
-                menuItem.image = icon:template(false):setSize(iconSizeMenu)
+                menuItem.image = icon:template(false)
             end
         end
 
@@ -122,9 +114,9 @@ end
 local function updateIcon()
     local app = hs.application.frontmostApplication()
     if app and app:bundleID() then
-        local icon = hs.image.imageFromAppBundle(app:bundleID())
+        local icon = utils.getCachedIcon(app:bundleID(), iconSizeSwitcher)
         if icon then
-            switcher:setIcon(icon:template(false):setSize(iconSizeSwitcher), false)
+            switcher:setIcon(icon:template(false), false)
         end
     end
 end
@@ -133,17 +125,8 @@ end
 switcher:setMenu(makeMenu)
 updateIcon()
 
--- Watch for app activation events (when an application becomes active)
-local appWatcher = hs.application.watcher.new(function(appName, eventType, app)
-    if eventType == hs.application.watcher.activated then
-        updateIcon()
-    end
-end)
-appWatcher:start()
-
--- Also watch for window focus changes using hs.window.filter
-local windowFilter = hs.window.filter.new(nil)
-windowFilter:subscribe(hs.window.filter.windowFocused, function()
+-- Register with central event hub for app activation events
+utils.onAppEvent("activated", function(appName, appObject)
     updateIcon()
 end)
 

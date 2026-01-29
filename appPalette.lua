@@ -1,6 +1,7 @@
 -- Application Palette (classic Mac OS style)
 -- A floating palette showing running apps
 
+local utils = require("utils")
 local appPalette = {}
 
 -- Configuration
@@ -47,19 +48,9 @@ local function getDragEventTap()
     return dragEventTap
 end
 
--- Get sorted running apps
+-- Get sorted running apps (uses shared utility)
 local function getRunningApps()
-    local apps = hs.application.runningApplications()
-    local regularApps = {}
-    for _, app in ipairs(apps) do
-        if app:kind() == 1 and app:title() and app:title() ~= "" then
-            table.insert(regularApps, app)
-        end
-    end
-    table.sort(regularApps, function(a, b)
-        return a:title():lower() < b:title():lower()
-    end)
-    return regularApps
+    return utils.getRunningApps()
 end
 
 -- Build the palette
@@ -140,13 +131,13 @@ local function buildPalette()
             })
         end
 
-        -- App icon
-        local icon = app:bundleID() and hs.image.imageFromAppBundle(app:bundleID())
+        -- App icon (using cached icons)
+        local icon = utils.getCachedIcon(app:bundleID(), { w = iconSize, h = iconSize })
         if icon then
             canvas:appendElements({
                 {
                     type = "image",
-                    image = icon:setSize({ w = iconSize, h = iconSize }),
+                    image = icon,
                     frame = { x = padding, y = yPos + (rowHeight - iconSize) / 2, w = iconSize, h = iconSize },
                 },
             })
@@ -243,31 +234,8 @@ local function buildPalette()
     end
 end
 
--- Track app count to detect changes
-local lastAppCount = 0
-local pollTimer = nil
-
--- Poll for app changes every second when visible
-local function startPolling()
-    if not pollTimer then
-        pollTimer = hs.timer.new(1, function()
-            if isVisible and not isDragging then
-                local newCount = #getRunningApps()
-                if newCount ~= lastAppCount then
-                    lastAppCount = newCount
-                    buildPalette()
-                end
-            end
-        end)
-    end
-    pollTimer:start()
-end
-
-local function stopPolling()
-    if pollTimer then
-        pollTimer:stop()
-    end
-end
+-- Event-driven updates (replaces polling)
+-- These callbacks are registered after module loads, see bottom of file
 
 -- Toggle visibility
 function appPalette.toggle()
@@ -283,17 +251,27 @@ function appPalette.show()
         buildPalette()
         if canvas then canvas:show() end
         isVisible = true
-        startPolling()
     end
 end
 
 function appPalette.hide()
     if canvas then canvas:hide() end
     isVisible = false
-    stopPolling()
 end
 
 -- Hotkey to toggle (Ctrl+Cmd+A)
 hs.hotkey.bind({ "ctrl", "cmd" }, "A", appPalette.toggle)
+
+-- Register for app events to update palette when visible
+-- This replaces the 1-second polling timer
+local function rebuildIfVisible()
+    if isVisible and not isDragging then
+        buildPalette()
+    end
+end
+
+utils.onAppEvent("launched", rebuildIfVisible)
+utils.onAppEvent("terminated", rebuildIfVisible)
+utils.onAppEvent("activated", rebuildIfVisible)
 
 return appPalette

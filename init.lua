@@ -1,5 +1,6 @@
 -- Oliver Taylor's Hammerspoon Config
 
+local utils = require("utils")
 require("appPalette")
 require("applicationSwitcher")
 require("popupTabs")
@@ -171,36 +172,26 @@ end
 -- automatically killed if they launch.
 
 local assassinTargets = {
-    "Mail",
-    "Safari", "Chrome", "Firefox",
-    "TV",
-    "Messages",
-    "News",
-    "Reminders",
-    "Calendar",
-    "Visual Studio Code",
+    ["Mail"] = true,
+    ["Safari"] = true,
+    ["Chrome"] = true,
+    ["Firefox"] = true,
+    ["TV"] = true,
+    ["Messages"] = true,
+    ["News"] = true,
+    ["Reminders"] = true,
+    ["Calendar"] = true,
+    ["Visual Studio Code"] = true,
 }
 
-function writingAssassin(appName, eventType, appObject)
-    if (eventType == hs.application.watcher.launching or
-        eventType == hs.application.watcher.activated) then
-      for _, target in ipairs(assassinTargets) do
-        if appName == target then
-        --   hs.notify.new({ title="Writing Assassin", informativeText=appName.." killed!" }):send()
-          appObject:kill()
-        end
-      end
-    end
-  end
-
--- Create a watcher for the writing assassin
-local writingAssassinWatcher = hs.application.watcher.new(writingAssassin)
+-- Writing mode state tracked here, watcher logic moved to unified watcher below
+local writingModeActive = false
 
 -- Create a menu bar item for writing mode
 local writingMenu
 
 function startWritingMode()
-    writingAssassinWatcher:start()
+    writingModeActive = true
     writingMenu = hs.menubar.new()
     writingMenu:setTitle("Writing...")
     writingMenu:setMenu({ { title = "Exit Writing Mode", fn = exitWritingMode } })
@@ -208,7 +199,7 @@ function startWritingMode()
 end
 
 function exitWritingMode()
-    writingAssassinWatcher:stop()
+    writingModeActive = false
     if writingMenu then
       writingMenu:removeFromMenuBar()
       writingMenu = nil
@@ -237,26 +228,8 @@ end
 -- This runs all the time, unlike Writing Assassin which is toggled.
 
 local blockedApps = {
-    "News",
+    ["News"] = true,
 }
-
-local function appBlocker(appName, eventType, appObject)
-    if eventType == hs.application.watcher.launching then
-        for _, blocked in ipairs(blockedApps) do
-            if appName == blocked then
-                appObject:kill()
-                hs.notify.new({
-                    title = "App Blocked",
-                    informativeText = appName .. " was blocked from launching"
-                }):send()
-                return
-            end
-        end
-    end
-end
-
-local appBlockerWatcher = hs.application.watcher.new(appBlocker)
-appBlockerWatcher:start()
 
 
 -- Global Key Bindings
@@ -302,18 +275,8 @@ end
 -- Generate menu items for currently running apps
 function runningAppsMenuItems()
     local items = {}
-    local apps = hs.application.runningApplications()
-
-    -- Filter to regular apps (not background/system apps) and sort by name
-    local regularApps = {}
-    for _, app in ipairs(apps) do
-        if app:kind() == 1 then  -- 1 = regular app (has dock icon)
-            table.insert(regularApps, app)
-        end
-    end
-    table.sort(regularApps, function(a, b)
-        return a:name():lower() < b:name():lower()
-    end)
+    local regularApps = utils.getRunningApps()
+    local iconSize = { w = 18, h = 18 }
 
     for _, app in ipairs(regularApps) do
         local appName = app:name()
@@ -321,7 +284,7 @@ function runningAppsMenuItems()
 
         table.insert(items, {
             title = appName,
-            image = bundleID and hs.image.imageFromAppBundle(bundleID),
+            image = utils.getCachedIcon(bundleID, iconSize),
             fn = function() app:activate() end,
         })
     end
@@ -336,29 +299,40 @@ function folderMenuItems(path)
     if string.sub(path, 1, 2) == "~/" then
         expandedPath = os.getenv("HOME") .. string.sub(path, 2)
     end
-    local handle = io.popen('ls -A1 "' .. expandedPath .. '"')
-    if not handle then return items end
-    for entry in handle:lines() do
-        -- Skip hidden files (those starting with a dot)
+
+    -- Use native hs.fs.dir instead of spawning shell
+    local iter, dirObj = hs.fs.dir(expandedPath)
+    if not iter then return items end
+
+    local entries = {}
+    for entry in iter, dirObj do
+        -- Skip hidden files and . / ..
         if string.sub(entry, 1, 1) ~= "." then
-            local fullPath = expandedPath .. "/" .. entry
-            local attr = hs.fs.attributes(fullPath)
-            if attr then
-                if attr.mode == "directory" then
-                    table.insert(items, {
-                        title = entry,
-                        menu = folderMenuItems(fullPath)
-                    })
-                else
-                    table.insert(items, {
-                        title = entry,
-                        fn = function() os.execute('open "' .. fullPath .. '"') end
-                    })
-                end
+            table.insert(entries, entry)
+        end
+    end
+
+    -- Sort entries alphabetically
+    table.sort(entries, function(a, b) return a:lower() < b:lower() end)
+
+    for _, entry in ipairs(entries) do
+        local fullPath = expandedPath .. "/" .. entry
+        local attr = hs.fs.attributes(fullPath)
+        if attr then
+            if attr.mode == "directory" then
+                table.insert(items, {
+                    title = entry,
+                    menu = folderMenuItems(fullPath)
+                })
+            else
+                table.insert(items, {
+                    title = entry,
+                    fn = function() os.execute('open "' .. fullPath .. '"') end
+                })
             end
         end
     end
-    handle:close()
+
     return items
 end
 
@@ -421,26 +395,52 @@ local readlineExcludedApps = {
     ["Emacs"] = true,
 }
 
--- App Activation Watcher
-function appModeMaps(appName, eventType, appObject)
-    if (eventType == hs.application.watcher.activated) then
-        -- Readline Mode Map -- active for every app except those in readlineExcludedApps
+-- Unified Application Watcher
+-- Consolidates all app event handling into a single watcher
+local unifiedWatcher = hs.application.watcher.new(function(appName, eventType, appObject)
+    -- Handle launching events
+    if eventType == hs.application.watcher.launching then
+        -- App blocker - always active
+        if blockedApps[appName] then
+            appObject:kill()
+            hs.notify.new({
+                title = "App Blocked",
+                informativeText = appName .. " was blocked from launching"
+            }):send()
+            return
+        end
+        -- Writing assassin - only when writing mode active
+        if writingModeActive and assassinTargets[appName] then
+            appObject:kill()
+            return
+        end
+    end
+
+    -- Handle activated events
+    if eventType == hs.application.watcher.activated then
+        -- Writing assassin - kill on activation too
+        if writingModeActive and assassinTargets[appName] then
+            appObject:kill()
+            return
+        end
+        -- Readline Mode Map - active for every app except excluded ones
         if readlineExcludedApps[appName] then
             readlineModeMap:exit()
         else
             readlineModeMap:enter()
         end
-        -- Pages Mode Map -- active ONLY for Pages
+        -- Pages Mode Map - active ONLY for Pages
         if appName == "Pages" then
             pagesModeMap:enter()
         else
             pagesModeMap:exit()
         end
     end
-end
 
-appModeMapWatcher = hs.application.watcher.new(appModeMaps)
-appModeMapWatcher:start()
+    -- Dispatch to registered callbacks in other modules
+    utils.dispatchEvent(appName, eventType, appObject)
+end)
+unifiedWatcher:start()
 
 -- Nofity user that config has loaded correctly.
 hs.notify.new({title="Hammerspoon", informativeText="Ready to rock 🤘"}):send()
