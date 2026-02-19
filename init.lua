@@ -83,8 +83,40 @@ end
 ---- Backups ----
 
 function backupCloud()
-    hs.osascript.applescript('tell app \"Terminal\" to do script \"backup-cloud\"')
-    hs.application.launchOrFocus("Terminal")
+    local cmd = "/Users/oliver/code/rsync-backup/backup-cloud.sh backup"
+    hs.osascript.applescript(string.format([[
+tell application "Terminal"
+    activate
+    do script "%s"
+end tell
+]], cmd))
+end
+
+function lastBackupLabel()
+    local backupDir = os.getenv("HOME") .. "/code/rsync-backup"
+    local stateFile = backupDir .. "/.last-success-epoch"
+    local attr = hs.fs.attributes(stateFile)
+    if attr and attr.mode == "file" then
+        local f = io.open(stateFile, "r")
+        if f then
+            local content = f:read("*l")
+            f:close()
+            local epoch = tonumber(content)
+            if epoch then
+                return "Last Backup: " .. os.date("%Y-%m-%d %H:%M:%S", epoch)
+            end
+        end
+    end
+
+    return "Last Backup: No successful backup recorded"
+end
+
+function backupMenuItems()
+    return {
+        { title = lastBackupLabel(), disabled = true },
+        { title = "-" },
+        { title = "Back Up Now", fn = backupCloud },
+    }
 end
 
 -- In Pages there is no button or menu item to TOGGLE the sidebar.
@@ -240,6 +272,7 @@ local blockedApps = {
 keyBindings = {
     { { 'alt', 'cmd' },         'm',     toggleMenubar },
     { { 'ctrl', 'alt', 'cmd' }, 'd',     toggleDarkMode },
+    { { 'ctrl', 'alt', 'cmd' }, 'b',     backupCloud },
 
     -- Window Management
     { { 'ctrl', 'alt', 'cmd' }, 'left',  menuWindowLeft },
@@ -358,7 +391,7 @@ function fMenuMain()
         {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
 
         {title = "-"},
-        {title = "Backup to Cloud", fn = backupCloud },
+        {title = "Backups", shortcut = "b", menu = backupMenuItems() },
         {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
     }
     fMenu(menuItems)
