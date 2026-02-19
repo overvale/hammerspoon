@@ -430,7 +430,7 @@ local readlineExcludedApps = {
 
 -- Unified Application Watcher
 -- Consolidates all app event handling into a single watcher
-local unifiedWatcher = hs.application.watcher.new(function(appName, eventType, appObject)
+unifiedWatcher = hs.application.watcher.new(function(appName, eventType, appObject)
     -- Handle launching events
     if eventType == hs.application.watcher.launching then
         -- App blocker - always active

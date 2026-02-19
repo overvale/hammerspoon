@@ -2,6 +2,7 @@
 -- Clickable tabs at the bottom of the screen that open folders
 
 local popupTabs = {}
+local screenWatcher = nil
 
 -- Configuration
 local tabHeight = 24
@@ -42,6 +43,15 @@ end
 
 -- Create the tabs
 local tabSpacing = 12
+
+local function clearTabs()
+    for i, tab in ipairs(popupTabs) do
+        if tab then
+            tab:delete()
+            popupTabs[i] = nil
+        end
+    end
+end
 
 local function createTabs()
     local screen = hs.screen.mainScreen()
@@ -131,7 +141,32 @@ local function createTabs()
     end
 end
 
+function popupTabs.refresh()
+    clearTabs()
+    createTabs()
+end
+
+local function startScreenWatcher()
+    if screenWatcher then
+        return
+    end
+
+    screenWatcher = hs.screen.watcher.new(function()
+        popupTabs.refresh()
+    end)
+    screenWatcher:start()
+end
+
+function popupTabs.stop()
+    if screenWatcher then
+        screenWatcher:stop()
+        screenWatcher = nil
+    end
+    clearTabs()
+end
+
 -- Initialize
-createTabs()
+popupTabs.refresh()
+startScreenWatcher()
 
 return popupTabs
