@@ -1,8 +1,6 @@
 -- Oliver Taylor's Hammerspoon Config
 
 local utils = require("utils")
-require("appPalette")
-require("applicationSwitcher")
 require("popupTabs")
 
 -- Setup
@@ -211,7 +209,6 @@ local assassinTargets = {
     ["TV"] = true,
     ["Messages"] = true,
     ["News"] = true,
-    ["Reminders"] = true,
     ["Calendar"] = true,
     ["Visual Studio Code"] = true,
 }
@@ -272,7 +269,6 @@ local blockedApps = {
 keyBindings = {
     { { 'alt', 'cmd' },         'm',     toggleMenubar },
     { { 'ctrl', 'alt', 'cmd' }, 'd',     toggleDarkMode },
-    { { 'ctrl', 'alt', 'cmd' }, 'b',     backupCloud },
 
     -- Window Management
     { { 'ctrl', 'alt', 'cmd' }, 'left',  menuWindowLeft },
@@ -303,26 +299,6 @@ function fMenu(menuItems)
     menu:popupMenu(mousePos)
     -- delete when done
     menu:delete()
-end
-
--- Generate menu items for currently running apps
-function runningAppsMenuItems()
-    local items = {}
-    local regularApps = utils.getRunningApps()
-    local iconSize = { w = 18, h = 18 }
-
-    for _, app in ipairs(regularApps) do
-        local appName = app:name()
-        local bundleID = app:bundleID()
-
-        table.insert(items, {
-            title = appName,
-            image = utils.getCachedIcon(bundleID, iconSize),
-            fn = function() app:activate() end,
-        })
-    end
-
-    return items
 end
 
 -- Recursively generate menu items for a folder
@@ -371,25 +347,21 @@ end
 
 function fMenuMain()
     local menuItems = {
-        {title = "Running Apps", menu = runningAppsMenuItems() },
-        {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
-        {title = "Claude",      shortcut = "d", fn = openApp("Claude") },
-
+        -- {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
+        {title = "Calendar",    shortcut = "c", fn = openApp("Calendar")},
+        {title = "Mail",        shortcut = "m", fn = openApp("Mail")},
+        {title = "Messages",    shortcut = "M", fn = openApp("Messages")},
+        {title = "NetNewsWire", shortcut = "w", fn = openApp("NetNewsWire")},
+        {title = "↑ Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "NetNewsWire") },
         {title = "-"},
-        {title = "Calendar",  shortcut = "c", fn = openApp("Calendar")},
-        {title = "Mail",      shortcut = "m", fn = openApp("Mail")},
-        {title = "Messages",  shortcut = "M", fn = openApp("Messages")},
-        {title = "Reminders", shortcut = "r", fn = openApp("Reminders")},
-        {title = "↑ Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "Reminders")},
-
+        {title = "Music",   shortcut = "a", fn = openApp("Music")},
+        {title = "Notes",   shortcut = "n", fn = openApp("Notes")},
+        {title = "Safari",  shortcut = "s", fn = openApp("Safari")},
         {title = "-"},
-
-        {title = "Music",     shortcut = "a", fn = openApp("Music")},
-        {title = "Notes",     shortcut = "n", fn = openApp("Notes")},
-        {title = "Safari",    shortcut = "s", fn = openApp("Safari")},
-        {title = "Emacs",     shortcut = "e", fn = openApp("Emacs")},
-        {title = "Terminal",  shortcut = "t", fn = openApp("Terminal")},
-
+        {title = "Emacs",   shortcut = "e", fn = openApp("Emacs")},
+        {title = "Claude",       shortcut = "d", fn = openApp("Claude") },
+        {title = "Cursor",  shortcut = "v", fn = openApp("Cursor")},
+        {title = "Ghostty", shortcut = "t", fn = openApp("Ghostty")},
         {title = "-"},
         {title = "Backups", shortcut = "b", menu = backupMenuItems() },
         {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
