@@ -80,6 +80,7 @@ end
 
 ---- Backups ----
 
+
 function backupCloud()
     local cmd = "/Users/oliver/code/rsync-backup/backup-cloud.sh backup"
     hs.osascript.applescript(string.format([[
@@ -90,7 +91,7 @@ end tell
 ]], cmd))
 end
 
-function lastBackupLabel()
+function lastBackupEpoch()
     local backupDir = os.getenv("HOME") .. "/code/rsync-backup"
     local stateFile = backupDir .. "/.last-success-epoch"
     local attr = hs.fs.attributes(stateFile)
@@ -101,20 +102,60 @@ function lastBackupLabel()
             f:close()
             local epoch = tonumber(content)
             if epoch then
-                return "Last Backup: " .. os.date("%Y-%m-%d %H:%M:%S", epoch)
+                return epoch
             end
         end
     end
 
+    return nil
+end
+
+function backupAgeDays()
+    local epoch = lastBackupEpoch()
+    if not epoch then return nil end
+    local now = os.time()
+    local delta = now - epoch
+    if delta < 0 then delta = 0 end
+    return math.floor(delta / 86400)
+end
+
+function backupsAreStale()
+    local days = backupAgeDays()
+    if not days then return true end
+    return days >= 4
+end
+
+function backupsMenuTitle()
+    if backupsAreStale() then
+        return "Backups 􀇿"
+    end
+    return "Backups"
+end
+
+function lastBackupLabel()
+    local epoch = lastBackupEpoch()
+    if epoch then
+        return "Last Backup: " .. os.date("%Y-%m-%d %H:%M:%S", epoch)
+    end
     return "Last Backup: No successful backup recorded"
 end
 
 function backupMenuItems()
-    return {
+    local items = {
         { title = lastBackupLabel(), disabled = true },
-        { title = "-" },
-        { title = "Back Up Now", fn = backupCloud },
     }
+
+    if backupsAreStale() then
+        table.insert(items, {
+            title = "􀇿 Backup is stale (4+ days old)",
+            disabled = true
+        })
+    end
+
+    table.insert(items, { title = "-" })
+    table.insert(items, { title = "Back Up Now", fn = backupCloud })
+
+    return items
 end
 
 -- In Pages there is no button or menu item to TOGGLE the sidebar.
@@ -363,7 +404,7 @@ function fMenuMain()
         {title = "Cursor",  shortcut = "v", fn = openApp("Cursor")},
         {title = "Ghostty", shortcut = "t", fn = openApp("Ghostty")},
         {title = "-"},
-        {title = "Backups", shortcut = "b", menu = backupMenuItems() },
+        {title = backupsMenuTitle(), shortcut = "b", menu = backupMenuItems() },
         {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
     }
     fMenu(menuItems)
