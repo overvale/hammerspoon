@@ -52,7 +52,7 @@ function openApp(...)
 end
 
 function openSpotlight()
-    keyUpDown({"cmd"}, "space")
+    keyUpDown({ "cmd" }, "space")
 end
 
 -- Window Management
@@ -167,11 +167,11 @@ function pagesSidebarToggle()
         return
     end
 
-    local menuBar = app:findMenuItem({"View", "Table of Contents"})
+    local menuBar = app:findMenuItem({ "View", "Table of Contents" })
     if menuBar and menuBar["ticked"] then
-        app:selectMenuItem({"View", "Document Only"})
+        app:selectMenuItem({ "View", "Document Only" })
     else
-        app:selectMenuItem({"View", "Table of Contents"})
+        app:selectMenuItem({ "View", "Table of Contents" })
     end
 end
 
@@ -191,15 +191,15 @@ function toggleMenubar(mode)
     local m = (mode and mode:lower() ~= "" and mode:lower()) or "toggle"
 
     local lookup = {
-      hide   = "true",
-      show   = "false",
-      toggle = "not autohide menu bar"
+        hide   = "true",
+        show   = "false",
+        toggle = "not autohide menu bar"
     }
 
     local cmd = lookup[m]
     if not cmd then
-      hs.alert.show("toggleMenubar: bad mode “" .. tostring(mode) .. "”")
-      return
+        hs.alert.show("toggleMenubar: bad mode “" .. tostring(mode) .. "”")
+        return
     end
 
     hs.applescript(menubarCMD:format(cmd))
@@ -233,7 +233,6 @@ function toggleDarkMode()
         setDarkMode(true)
     end
 end
-
 
 -- Writing Assassin
 -- ----------------------------------------------
@@ -271,8 +270,8 @@ end
 function exitWritingMode()
     writingModeActive = false
     if writingMenu then
-      writingMenu:removeFromMenuBar()
-      writingMenu = nil
+        writingMenu:removeFromMenuBar()
+        writingMenu = nil
     end
     toggleMenubar(show)
 end
@@ -290,7 +289,6 @@ end)
 function toggleWritingMode()
     hs.execute('shortcuts run "Toggle Writing Focus"')
 end
-
 
 -- App Block List
 -- ----------------------------------------------
@@ -389,28 +387,29 @@ end
 function fMenuMain()
     local menuItems = {
         -- {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
-        {title = "Calendar",    shortcut = "c", fn = openApp("Calendar")},
-        {title = "Mail",        shortcut = "m", fn = openApp("Mail")},
-        {title = "Messages",    shortcut = "M", fn = openApp("Messages")},
-        {title = "NetNewsWire", shortcut = "w", fn = openApp("NetNewsWire")},
-        {title = "↑ Open All",  shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "NetNewsWire") },
-        {title = "-"},
-        {title = "Music",   shortcut = "a", fn = openApp("Music")},
-        {title = "Notes",   shortcut = "n", fn = openApp("Notes")},
-        {title = "Safari",  shortcut = "s", fn = openApp("Safari")},
-        {title = "-"},
-        {title = "Emacs",   shortcut = "e", fn = openApp("Emacs")},
-        {title = "Claude",       shortcut = "d", fn = openApp("Claude") },
-        {title = "Cursor",  shortcut = "v", fn = openApp("Cursor")},
-        {title = "Ghostty", shortcut = "t", fn = openApp("Ghostty")},
-        {title = "-"},
-        {title = backupsMenuTitle(), shortcut = "b", menu = backupMenuItems() },
-        {title = "Settings",  shortcut = ",", fn = openApp("Hammerspoon")},
+        { title = "Calendar", shortcut = "c", fn = openApp("Calendar") },
+        { title = "Mail", shortcut = "m", fn = openApp("Mail") },
+        { title = "Messages", shortcut = "M", fn = openApp("Messages") },
+        { title = "NetNewsWire", shortcut = "w", fn = openApp("NetNewsWire") },
+        { title = "↑ Open All", shortcut = "A", fn = openApp("Calendar", "Mail", "Messages", "NetNewsWire") },
+        { title = "-" },
+        { title = "Music", shortcut = "a", fn = openApp("Music") },
+        { title = "Notes", shortcut = "n", fn = openApp("Notes") },
+        { title = "Safari", shortcut = "s", fn = openApp("Safari") },
+        { title = "-" },
+        { title = "Emacs", shortcut = "e", fn = openApp("Emacs") },
+        { title = "Claude", shortcut = "d", fn = openApp("Claude") },
+        { title = "Codex", shortcut = "x", fn = openApp("Codex") },
+        { title = "Ghostty", shortcut = "t", fn = openApp("Ghostty") },
+        { title = "Zed", shortcut = "z", fn = openApp("Zed") },
+        { title = "-" },
+        { title = backupsMenuTitle(), shortcut = "b", menu = backupMenuItems() },
+        { title = "Settings", shortcut = ",", fn = openApp("Hammerspoon") },
     }
     fMenu(menuItems)
 end
 
-hs.hotkey.bind({"shift", "cmd"}, "space", fMenuMain)
+hs.hotkey.bind({ "shift", "cmd" }, "space", fMenuMain)
 
 
 -- App-Specific Keymaps
@@ -489,6 +488,6 @@ end)
 unifiedWatcher:start()
 
 -- Nofity user that config has loaded correctly.
-hs.notify.new({title="Hammerspoon", informativeText="Ready to rock 🤘"}):send()
+hs.notify.new({ title = "Hammerspoon", informativeText = "Ready to rock 🤘" }):send()
 
 -- END HAMMERSPOON CONFIG --
