@@ -52,7 +52,7 @@ local function startWritingMode()
     writingMenu = hs.menubar.new()
     writingMenu:setTitle("Writing...")
     writingMenu:setMenu({ { title = "Exit Writing Mode", fn = writingAssassin.confirmExit } })
-    toggleMenubar(hide)
+    toggleMenubar("hide")
 end
 
 local function exitWritingMode()
@@ -61,7 +61,7 @@ local function exitWritingMode()
         writingMenu:removeFromMenuBar()
         writingMenu = nil
     end
-    toggleMenubar(show)
+    toggleMenubar("show")
 end
 
 function writingAssassin.isActive()
