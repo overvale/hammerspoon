@@ -32,7 +32,7 @@ local function getDragEventTap()
         dragEventTap = hs.eventtap.new({ hs.eventtap.event.types.leftMouseDragged, hs.eventtap.event.types.leftMouseUp }, function(e)
             if e:getType() == hs.eventtap.event.types.leftMouseUp then
                 isDragging = false
-                dragEventTap:stop()
+                if dragEventTap then dragEventTap:stop() end
                 return false
             end
 
