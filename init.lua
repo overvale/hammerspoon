@@ -1,6 +1,7 @@
 -- Oliver Taylor's Hammerspoon Config
 
 local utils = require("utils")
+local writingAssassin = require("writingAssassin")
 require("popupTabs")
 
 -- Setup
@@ -234,61 +235,6 @@ function toggleDarkMode()
     end
 end
 
--- Writing Assassin
--- ----------------------------------------------
-
--- Code for starting and stopping "WRITING MODE".
--- When this mode is active the apps in the below list are
--- automatically killed if they launch.
-
-local assassinTargets = {
-    ["Mail"] = true,
-    ["Safari"] = true,
-    ["Chrome"] = true,
-    ["Firefox"] = true,
-    ["TV"] = true,
-    ["Messages"] = true,
-    ["News"] = true,
-    ["Calendar"] = true,
-    ["Visual Studio Code"] = true,
-}
-
--- Writing mode state tracked here, watcher logic moved to unified watcher below
-local writingModeActive = false
-
--- Create a menu bar item for writing mode
-local writingMenu
-
-function startWritingMode()
-    writingModeActive = true
-    writingMenu = hs.menubar.new()
-    writingMenu:setTitle("Writing...")
-    writingMenu:setMenu({ { title = "Exit Writing Mode", fn = exitWritingMode } })
-    toggleMenubar(hide)
-end
-
-function exitWritingMode()
-    writingModeActive = false
-    if writingMenu then
-        writingMenu:removeFromMenuBar()
-        writingMenu = nil
-    end
-    toggleMenubar(show)
-end
-
-hs.urlevent.bind("writing-mode-start", function(eventName, params)
-    startWritingMode()
-end)
-
-hs.urlevent.bind("writing-mode-exit", function(eventName, params)
-    exitWritingMode()
-end)
-
--- I have a shortcut to toggle a writing focus, and it includes
--- callbacks to the above functions.
-function toggleWritingMode()
-    hs.execute('shortcuts run "Toggle Writing Focus"')
-end
 
 -- App Block List
 -- ----------------------------------------------
@@ -404,6 +350,7 @@ function fMenuMain()
         { title = "Zed", shortcut = "z", fn = openApp("Zed") },
         { title = "-" },
         { title = backupsMenuTitle(), shortcut = "b", menu = backupMenuItems() },
+        { title = "Toggle Writing Mode", shortcut = "W", fn = writingAssassin.isActive() and writingAssassin.confirmExit or writingAssassin.toggle },
         { title = "Settings", shortcut = ",", fn = openApp("Hammerspoon") },
     }
     fMenu(menuItems)
@@ -445,6 +392,8 @@ local readlineExcludedApps = {
 unifiedWatcher = hs.application.watcher.new(function(appName, eventType, appObject)
     -- Handle launching events
     if eventType == hs.application.watcher.launching then
+        -- Writing assassin takes priority while writing mode is active.
+        if writingAssassin.handleAppEvent(appName, eventType, appObject) then return end
         -- App blocker - always active
         if blockedApps[appName] then
             appObject:kill()
@@ -454,20 +403,12 @@ unifiedWatcher = hs.application.watcher.new(function(appName, eventType, appObje
             }):send()
             return
         end
-        -- Writing assassin - only when writing mode active
-        if writingModeActive and assassinTargets[appName] then
-            appObject:kill()
-            return
-        end
     end
 
     -- Handle activated events
     if eventType == hs.application.watcher.activated then
         -- Writing assassin - kill on activation too
-        if writingModeActive and assassinTargets[appName] then
-            appObject:kill()
-            return
-        end
+        if writingAssassin.handleAppEvent(appName, eventType, appObject) then return end
         -- Readline Mode Map - active for every app except excluded ones
         if readlineExcludedApps[appName] then
             readlineModeMap:exit()
