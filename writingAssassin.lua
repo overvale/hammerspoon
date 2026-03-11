@@ -6,13 +6,10 @@ local writingAssassin = {}
 
 local assassinTargets = {
     ["Mail"] = true,
-    ["TV"] = true,
     ["Messages"] = true,
-    ["News"] = true,
     ["Calendar"] = true,
-    ["Brave Browser"] = true,
+    ["TV"] = true,
     ["Games"] = true,
-    ["NetNewsWire"] = true,
 }
 
 local writingModeActive = false

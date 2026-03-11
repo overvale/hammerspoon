@@ -52,6 +52,17 @@ function openApp(...)
     end
 end
 
+function emacsAgenda()
+    return function()
+        hs.task.new("/Applications/Emacs.app/Contents/MacOS/Emacs", function()
+            hs.application.launchOrFocus("Emacs")
+        end, {
+            "--eval", '(org-agenda nil "1")',
+            "--eval", "(delete-other-windows)",
+        }):start()
+    end
+end
+
 function openSpotlight()
     keyUpDown({ "cmd" }, "space")
 end
@@ -84,12 +95,7 @@ end
 
 function backupCloud()
     local cmd = "/Users/oliver/code/rsync-backup/backup-cloud.sh backup"
-    hs.osascript.applescript(string.format([[
-tell application "Terminal"
-    activate
-    do script "%s"
-end tell
-]], cmd))
+    hs.task.new("/Users/oliver/.local/bin/term", nil, {cmd}):start()
 end
 
 function lastBackupEpoch()
@@ -175,6 +181,9 @@ function pagesSidebarToggle()
         app:selectMenuItem({ "View", "Table of Contents" })
     end
 end
+
+---- Log ----
+
 
 ---- Menu Bar ----
 
@@ -333,21 +342,22 @@ end
 function fMenuMain()
     local menuItems = {
         -- {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
-        { title = "Calendar", shortcut = "c", fn = openApp("Calendar") },
+        { title = "Calendar", shortcut = "l", fn = openApp("Calendar") },
         { title = "Mail", shortcut = "m", fn = openApp("Mail") },
         { title = "Messages", shortcut = "M", fn = openApp("Messages") },
+        { title = "Agenda", shortcut = "g", fn = emacsAgenda() },
         { title = "↑ Open All", shortcut = "A", fn = openApp("Calendar", "Mail", "Messages") },
         { title = "-" },
-        { title = "NetNewsWire", shortcut = "w", fn = openApp("NetNewsWire") },
-        { title = "Music", shortcut = "a", fn = openApp("Music") },
-        { title = "Notes", shortcut = "n", fn = openApp("Notes") },
         { title = "Safari", shortcut = "s", fn = openApp("Safari") },
-        { title = "-" },
+        { title = "Music", shortcut = "a", fn = openApp("Music") },
         { title = "Emacs", shortcut = "e", fn = openApp("Emacs") },
-        { title = "Claude", shortcut = "d", fn = openApp("Claude") },
-        { title = "Codex", shortcut = "x", fn = openApp("Codex") },
+        { title = "Claude", shortcut = "c", fn = openApp("Claude") },
         { title = "Ghostty", shortcut = "t", fn = openApp("Ghostty") },
         { title = "Zed", shortcut = "z", fn = openApp("Zed") },
+        { title = "Codex", shortcut = "x", fn = openApp("Codex") },
+        { title = "-" },
+        { title = "Log Entry", shortcut = "L", fn = function() os.execute("/Users/oliver/.local/bin/logg") end },
+        { title = "Open Logs", fn = openFolder("~/Documents/log/") },
         { title = "-" },
         { title = backupsMenuTitle(), shortcut = "b", menu = backupMenuItems() },
         { title = "Toggle Writing Mode", shortcut = "W", fn = writingAssassin.isActive() and writingAssassin.confirmExit or writingAssassin.toggle },
