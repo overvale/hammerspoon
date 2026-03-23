@@ -54,7 +54,7 @@ end
 
 function emacsAgenda()
     return function()
-        hs.task.new("/Applications/Emacs.app/Contents/MacOS/Emacs", function()
+        hs.task.new("/Users/oliver/Applications/Emacs.app/Contents/MacOS/Emacs", function()
             hs.application.launchOrFocus("Emacs")
         end, {
             "--eval", '(org-agenda nil "1")',
@@ -347,6 +347,35 @@ function fMenuMain()
         { title = "Messages", shortcut = "M", fn = openApp("Messages") },
         { title = "Agenda", shortcut = "g", fn = emacsAgenda() },
         { title = "↑ Open All", shortcut = "A", fn = openApp("Calendar", "Mail", "Messages") },
+        { title = "-" },
+        { title = "Reading", shortcut = "r", fn = function()
+            fMenu({
+                { title = "Reading", disabled = true },
+                { title = "-" },
+                { title = "The Economist", fn = function() hs.urlevent.openURL("https://www.economist.com") end },
+                { title = "Bloomberg", fn = function() hs.urlevent.openURL("https://www.bloomberg.com") end },
+                { title = "Marginal Revolution", fn = function() hs.urlevent.openURL("https://marginalrevolution.com") end },
+                { title = "Simon Willison", fn = function() hs.urlevent.openURL("https://simonwillison.net") end },
+                { title = "Fratello Watches", fn = function() hs.urlevent.openURL("https://www.fratellowatches.com/archives/") end },
+                { title = "Hacker News (Best)", fn = function() hs.urlevent.openURL("https://news.ycombinator.com/best") end },
+                { title = "HN Under-commented", fn = function() hs.task.new("/Users/oliver/code/ai-sandbox/hn-undercommented.py", nil, {"-w"}):start() end },
+                { title = "Recommended Link", fn = function()
+                    hs.task.new("/bin/zsh", function(_, stdout)
+                        local url = stdout:gsub("%s+$", "")
+                        if url ~= "" then hs.urlevent.openURL(url) end
+                    end, {"-l", "-c", "/Users/oliver/code/reading-explorer/re -1"}):start()
+                end },
+                { title = "-" },
+                { title = "Open All", shortcut = "a", fn = function()
+                    hs.urlevent.openURL("https://www.economist.com")
+                    hs.urlevent.openURL("https://www.bloomberg.com")
+                    hs.urlevent.openURL("https://marginalrevolution.com")
+                    hs.urlevent.openURL("https://simonwillison.net")
+                    hs.urlevent.openURL("https://www.fratellowatches.com/archives/")
+                    hs.urlevent.openURL("https://news.ycombinator.com/best")
+                end },
+            })
+        end },
         { title = "-" },
         { title = "Safari", shortcut = "s", fn = openApp("Safari") },
         { title = "Music", shortcut = "a", fn = openApp("Music") },
