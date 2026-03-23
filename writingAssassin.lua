@@ -10,6 +10,8 @@ local assassinTargets = {
     ["Calendar"] = true,
     ["TV"] = true,
     ["Games"] = true,
+    ["Safari"] = true,
+    ["Brave Browser"] = true,
 }
 
 local writingModeActive = false
