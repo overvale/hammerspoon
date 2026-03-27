@@ -339,8 +339,8 @@ function folderMenuItems(path)
     return items
 end
 
-function fMenuMain()
-    local menuItems = {
+function fMenuItems()
+    return {
         -- {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
         { title = "Calendar", shortcut = "l", fn = openApp("Calendar") },
         { title = "Mail", shortcut = "m", fn = openApp("Mail") },
@@ -392,8 +392,28 @@ function fMenuMain()
         { title = "Toggle Writing Mode", shortcut = "W", fn = writingAssassin.isActive() and writingAssassin.confirmExit or writingAssassin.toggle },
         { title = "Settings", shortcut = ",", fn = openApp("Hammerspoon") },
     }
-    fMenu(menuItems)
 end
+
+function fMenuMain()
+    fMenu(fMenuItems())
+end
+
+-- Persistent menubar item
+fMenuBar = hs.menubar.new()
+local boltCanvas = hs.canvas.new({x=0, y=0, w=22, h=22})
+boltCanvas:appendElements({
+    type = "segments",
+    closed = true,
+    action = "fill",
+    fillColor = {white = 0, alpha = 1},
+    coordinates = {
+        {x=12, y=1}, {x=5, y=12}, {x=10, y=12},
+        {x=8, y=21}, {x=17, y=9}, {x=12, y=9},
+    },
+})
+fMenuBar:setIcon(boltCanvas:imageFromCanvas():template(true))
+boltCanvas:delete()
+fMenuBar:setMenu(fMenuItems)
 
 hs.hotkey.bind({ "shift", "cmd" }, "space", fMenuMain)
 
