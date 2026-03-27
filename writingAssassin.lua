@@ -19,6 +19,13 @@ local writingMenu
 local recentBlockNotifications = {}
 local notificationDedupeSeconds = 1
 local ignoringNextToggle = false
+local toggleCallbacks = {}
+
+local function fireToggleCallbacks(active)
+    for _, fn in ipairs(toggleCallbacks) do
+        fn(active)
+    end
+end
 
 local function startWritingMode()
     -- Check for running assassin targets
@@ -52,6 +59,7 @@ local function startWritingMode()
     writingMenu:setTitle("Writing...")
     writingMenu:setMenu({ { title = "Exit Writing Mode", fn = writingAssassin.confirmExit } })
     toggleMenubar("hide")
+    fireToggleCallbacks(true)
 end
 
 local function exitWritingMode()
@@ -61,10 +69,15 @@ local function exitWritingMode()
         writingMenu = nil
     end
     toggleMenubar("show")
+    fireToggleCallbacks(false)
 end
 
 function writingAssassin.isActive()
     return writingModeActive
+end
+
+function writingAssassin.onToggle(fn)
+    table.insert(toggleCallbacks, fn)
 end
 
 function writingAssassin.toggle()

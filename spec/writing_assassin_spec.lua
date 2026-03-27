@@ -180,4 +180,32 @@ describe("writingAssassin", function()
             assert.is_true(wa.isActive())
         end)
     end)
+
+    -- -----------------------------------------------------------------------
+
+    describe("onToggle() callbacks", function()
+        it("fires callback with true when writing mode starts", function()
+            local received = nil
+            wa.onToggle(function(active) received = active end)
+            mock.urlHandlers["writing-mode-start"]()
+            assert.is_true(received)
+        end)
+
+        it("fires callback with false when writing mode exits", function()
+            local received = nil
+            mock.urlHandlers["writing-mode-start"]()
+            wa.onToggle(function(active) received = active end)
+            mock.urlHandlers["writing-mode-exit"]()
+            assert.is_false(received)
+        end)
+
+        it("fires multiple registered callbacks", function()
+            local a, b = nil, nil
+            wa.onToggle(function(active) a = active end)
+            wa.onToggle(function(active) b = active end)
+            mock.urlHandlers["writing-mode-start"]()
+            assert.is_true(a)
+            assert.is_true(b)
+        end)
+    end)
 end)

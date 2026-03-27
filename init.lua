@@ -2,7 +2,12 @@
 
 local utils = require("utils")
 local writingAssassin = require("writingAssassin")
-require("popupTabs")
+popupTabs = require("popupTabs")
+
+writingAssassin.onToggle(function(active)
+    if not popupTabs.hideInWritingMode then return end
+    if active then popupTabs.hide() else popupTabs.show() end
+end)
 
 -- Setup
 -- -----------------------------------------------

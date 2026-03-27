@@ -3,6 +3,10 @@
 
 local popupTabs = {}
 local screenWatcher = nil
+local hidden = false
+
+-- Set to true to hide tabs when writing mode is active
+popupTabs.hideInWritingMode = true
 
 -- Configuration
 local tabHeight = 24
@@ -142,9 +146,21 @@ local function createTabs()
     end
 end
 
+function popupTabs.hide()
+    hidden = true
+    clearTabs()
+end
+
+function popupTabs.show()
+    hidden = false
+    createTabs()
+end
+
 function popupTabs.refresh()
     clearTabs()
-    createTabs()
+    if not hidden then
+        createTabs()
+    end
 end
 
 local function startScreenWatcher()
