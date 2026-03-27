@@ -19,6 +19,7 @@ local writingMenu
 local recentBlockNotifications = {}
 local notificationDedupeSeconds = 1
 local ignoringNextToggle = false
+local exitApproved = false
 local toggleCallbacks = {}
 
 local function fireToggleCallbacks(active)
@@ -80,11 +81,15 @@ function writingAssassin.onToggle(fn)
     table.insert(toggleCallbacks, fn)
 end
 
+function writingAssassin.approveExit()
+    exitApproved = true
+end
+
 function writingAssassin.toggle()
     hs.execute('shortcuts run "Toggle Writing Focus"')
 end
 
-function writingAssassin.confirmExit()
+local function runExitFlow(onApproved, onDenied)
     local countdown = 15
     local screen = hs.screen.mainScreen()
     local sf = screen:frame()
@@ -131,13 +136,37 @@ function writingAssassin.confirmExit()
                 return text returned of d
             ]])
             if ok and result == "I want to stop writing" then
-                writingAssassin.toggle()
+                onApproved()
+            else
+                onDenied()
             end
         else
             canvas["countdown"].text = tostring(countdown)
         end
     end)
     timer:start()
+end
+
+function writingAssassin.confirmExit()
+    runExitFlow(
+        function()
+            exitApproved = true
+            writingAssassin.toggle()
+        end,
+        function() end
+    )
+end
+
+local function handleSystemBypass()
+    runExitFlow(
+        function()
+            exitWritingMode()
+        end,
+        function()
+            ignoringNextToggle = true
+            writingAssassin.toggle()
+        end
+    )
 end
 
 -- Called from the unified watcher in init.lua
@@ -162,11 +191,18 @@ function writingAssassin.handleAppEvent(appName, eventType, appObject)
 end
 
 hs.urlevent.bind("writing-mode-start", function()
+    if writingModeActive then return end
     startWritingMode()
 end)
 
 hs.urlevent.bind("writing-mode-exit", function()
-    exitWritingMode()
+    if not writingModeActive then return end
+    if exitApproved then
+        exitApproved = false
+        exitWritingMode()
+    else
+        handleSystemBypass()
+    end
 end)
 
 hs.urlevent.bind("writing-mode-toggle", function()
@@ -175,7 +211,12 @@ hs.urlevent.bind("writing-mode-toggle", function()
         return
     end
     if writingModeActive then
-        exitWritingMode()
+        if exitApproved then
+            exitApproved = false
+            exitWritingMode()
+        else
+            handleSystemBypass()
+        end
     else
         startWritingMode()
     end

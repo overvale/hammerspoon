@@ -7,6 +7,7 @@ M.urlHandlers = {}
 M.calls = {}
 M.runningApps = {}
 M.currentTime = 1000000
+M.lastTimerCallback = nil
 
 function M.reset()
     M.urlHandlers = {}
@@ -14,6 +15,7 @@ function M.reset()
     M.runningApps = {}
     M.currentTime = 1000000
     M.applescriptResponse = nil
+    M.lastTimerCallback = nil
 
     _G.hs = {
         urlevent = {
@@ -59,11 +61,19 @@ function M.reset()
         },
         timer = {
             secondsSinceEpoch = function() return M.currentTime end,
-            new = function(_, _) return { start = function() end, stop = function() end } end,
+            new = function(_, callback)
+                M.lastTimerCallback = callback
+                return { start = function() end, stop = function() end }
+            end,
         },
         canvas = {
             new = function()
                 local c = {}
+                setmetatable(c, {
+                    __index = function()
+                        return setmetatable({}, { __newindex = function() end })
+                    end
+                })
                 c.appendElements = function() end
                 c.level          = function() end
                 c.behavior       = function() end

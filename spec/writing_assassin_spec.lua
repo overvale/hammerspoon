@@ -40,8 +40,15 @@ describe("writingAssassin", function()
             assert.is_true(wa.isActive())
         end)
 
-        it("writing-mode-exit deactivates", function()
+        it("writing-mode-exit does not deactivate without approval", function()
             mock.urlHandlers["writing-mode-start"]()
+            mock.urlHandlers["writing-mode-exit"]()
+            assert.is_true(wa.isActive())
+        end)
+
+        it("writing-mode-exit deactivates when exit is approved", function()
+            mock.urlHandlers["writing-mode-start"]()
+            wa.approveExit()
             mock.urlHandlers["writing-mode-exit"]()
             assert.is_false(wa.isActive())
         end)
@@ -51,8 +58,15 @@ describe("writingAssassin", function()
             assert.is_true(wa.isActive())
         end)
 
-        it("writing-mode-toggle deactivates when active", function()
+        it("writing-mode-toggle does not deactivate without approval", function()
             mock.urlHandlers["writing-mode-start"]()
+            mock.urlHandlers["writing-mode-toggle"]()
+            assert.is_true(wa.isActive())
+        end)
+
+        it("writing-mode-toggle deactivates when exit is approved", function()
+            mock.urlHandlers["writing-mode-start"]()
+            wa.approveExit()
             mock.urlHandlers["writing-mode-toggle"]()
             assert.is_false(wa.isActive())
         end)
@@ -183,6 +197,45 @@ describe("writingAssassin", function()
 
     -- -----------------------------------------------------------------------
 
+    describe("system bypass (Focus turned off at OS level)", function()
+        it("re-enables focus when user denies exit", function()
+            mock.urlHandlers["writing-mode-start"]()
+            mock.applescriptResponse = function() return true, "" end -- Nevermind
+            mock.urlHandlers["writing-mode-exit"]()
+            -- Fire countdown to completion
+            for i = 1, 15 do
+                mock.lastTimerCallback()
+            end
+            -- Should still be active
+            assert.is_true(wa.isActive())
+            -- Should have called toggle() to re-enable Focus
+            assert.is_not_nil(mock.calls.execute)
+            local lastCmd = mock.calls.execute[#mock.calls.execute]
+            assert.truthy(lastCmd:find("Toggle Writing Focus"))
+        end)
+
+        it("exits writing mode when user approves exit", function()
+            mock.urlHandlers["writing-mode-start"]()
+            mock.applescriptResponse = function() return true, "I want to stop writing" end
+            mock.urlHandlers["writing-mode-exit"]()
+            -- Fire countdown to completion
+            for i = 1, 15 do
+                mock.lastTimerCallback()
+            end
+            assert.is_false(wa.isActive())
+        end)
+
+        it("writing-mode-start is a no-op when already active", function()
+            mock.urlHandlers["writing-mode-start"]()
+            assert.is_true(wa.isActive())
+            -- Second start should not error or create duplicate state
+            mock.urlHandlers["writing-mode-start"]()
+            assert.is_true(wa.isActive())
+        end)
+    end)
+
+    -- -----------------------------------------------------------------------
+
     describe("onToggle() callbacks", function()
         it("fires callback with true when writing mode starts", function()
             local received = nil
@@ -195,6 +248,7 @@ describe("writingAssassin", function()
             local received = nil
             mock.urlHandlers["writing-mode-start"]()
             wa.onToggle(function(active) received = active end)
+            wa.approveExit()
             mock.urlHandlers["writing-mode-exit"]()
             assert.is_false(received)
         end)
