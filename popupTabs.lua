@@ -130,7 +130,8 @@ local function createTabs()
 
         -- Show the tab (below normal windows, above desktop)
         canvas:level(hs.canvas.windowLevels.normal - 1)
-        canvas:behavior(hs.canvas.windowBehaviors.canJoinAllSpaces)
+        canvas:behavior(hs.canvas.windowBehaviors.canJoinAllSpaces
+                      + hs.canvas.windowBehaviors.stationary)
         canvas:show()
 
         -- Store reference
