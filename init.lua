@@ -2,12 +2,6 @@
 
 local utils = require("utils")
 local writingAssassin = require("writingAssassin")
-popupTabs = require("popupTabs")
-
-writingAssassin.onToggle(function(active)
-    if not popupTabs.hideInWritingMode then return end
-    if active then popupTabs.hide() else popupTabs.show() end
-end)
 
 -- Setup
 -- -----------------------------------------------
@@ -300,53 +294,8 @@ function fMenu(menuItems)
     menu:delete()
 end
 
--- Recursively generate menu items for a folder
-function folderMenuItems(path)
-    local items = {}
-    local expandedPath = path
-    if string.sub(path, 1, 2) == "~/" then
-        expandedPath = os.getenv("HOME") .. string.sub(path, 2)
-    end
-
-    -- Use native hs.fs.dir instead of spawning shell
-    local iter, dirObj = hs.fs.dir(expandedPath)
-    if not iter then return items end
-
-    local entries = {}
-    for entry in iter, dirObj do
-        -- Skip hidden files and . / ..
-        if string.sub(entry, 1, 1) ~= "." then
-            table.insert(entries, entry)
-        end
-    end
-
-    -- Sort entries alphabetically
-    table.sort(entries, function(a, b) return a:lower() < b:lower() end)
-
-    for _, entry in ipairs(entries) do
-        local fullPath = expandedPath .. "/" .. entry
-        local attr = hs.fs.attributes(fullPath)
-        if attr then
-            if attr.mode == "directory" then
-                table.insert(items, {
-                    title = entry,
-                    menu = folderMenuItems(fullPath)
-                })
-            else
-                table.insert(items, {
-                    title = entry,
-                    fn = function() os.execute('open "' .. fullPath .. '"') end
-                })
-            end
-        end
-    end
-
-    return items
-end
-
 function fMenuItems()
     return {
-        -- {title = "The Material", menu = folderMenuItems("~/Documents/the-overveil/") },
         { title = "Calendar", shortcut = "l", fn = openApp("Calendar") },
         { title = "Mail", shortcut = "m", fn = openApp("Mail") },
         { title = "Messages", shortcut = "M", fn = openApp("Messages") },
